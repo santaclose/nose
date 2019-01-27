@@ -1,2 +1,2 @@
 # nose
-node based image editor
+node based image editor, doesn't work yet
