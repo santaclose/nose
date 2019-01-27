@@ -148,7 +148,6 @@ void GUI::Node::setPosition(const sf::Vector2f& newPosition)
 
 		if (p->connectionVertex != nullptr) // something connected to this pin
 		{
-			std::cout << "something connected to some input pin" << std::endl;
 			p->connectionVertex->position += displacement;
 		}
 		i++;
@@ -161,7 +160,6 @@ void GUI::Node::setPosition(const sf::Vector2f& newPosition)
 
 		if (p->connectionVertex != nullptr) // something connected to this pin
 		{
-			std::cout << "something connected to some output pin" << std::endl;
 			p->connectionVertex->position += displacement;
 		}
 		i++;
