@@ -14,21 +14,25 @@ namespace GUI
 		sf::Text text;
 		int stringOutputOffsetX;
 		sf::RectangleShape rect;
-		sf::Vertex* connectionVertex; // nullptr if not connected
+		std::vector<sf::Vertex*> connectionVertices;
+		std::vector<Pin*> connectedPins;
 	//public:
 		enum Type {
 
-		    Integer,
-		    Float,
-		    Vector2i,
-		    Recti,
-		    Image
+			Integer,
+			Float,
+			Vector2i,
+			Recti,
+			Image
 		};
 		static const Type pinTypes;
 
 		Pin(const std::string& name, const int type, const bool isInput, const sf::Font& font);
-		bool isMouseOver(sf::Vector2f& mousePos, sf::Vector2f& rectCenter);
-		void establishConnection(sf::Vertex* newConnectionVertex);
+		bool isMouseOver(sf::Vector2f& mousePos);
+		bool isDisconnected();
+		void establishConnection(sf::Vertex* newConnectionVertex, Pin* other);
+		sf::Vector2f getRectCenter();
+		void disconnectFrom(Pin*& p);
 	};
 
 	class Node
@@ -46,6 +50,7 @@ namespace GUI
 		sf::Vector2f getPosition();
 		bool isMouseOverBar(sf::Vector2f& mousePos);
 		bool isMouseOverContent(sf::Vector2f& mousePos);
-		bool isMouseOverUnconnectedPin(sf::Vector2f& mousePos, sf::Vector2f& pinRectCenterReturn, Pin*& resultingPin);
+		bool isMouseOverPin(sf::Vector2f& mousePos, Pin*& resultingPin);
+		//bool isMouseOverConnectablePin(sf::Vector2f& mousePos, sf::Vector2f& pinRectCenterReturn, Pin*& resultingPin);
 	};
 }
