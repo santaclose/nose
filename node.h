@@ -23,7 +23,8 @@ namespace GUI
 			Float,
 			Vector2i,
 			Recti,
-			Image
+			Image,
+			Color
 		};
 		static const Type pinTypes;
 

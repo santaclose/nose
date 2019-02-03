@@ -49,7 +49,7 @@ void GUI::Pin::assignColor(const int inputType, sf::RectangleShape& rect)
 			rect.setFillColor(sf::Color(0x4ca4fbff));
 			break;
 		case GUI::Pin::Float:
-			rect.setFillColor(sf::Color(0xff1d34ff));
+			rect.setFillColor(sf::Color(0xee1133ff));
 			break;
 		case GUI::Pin::Vector2i:
 			rect.setFillColor(sf::Color(0x56957aff));
@@ -59,6 +59,9 @@ void GUI::Pin::assignColor(const int inputType, sf::RectangleShape& rect)
 			break;
 		case GUI::Pin::Image:
 			rect.setFillColor(sf::Color(0x00aa00ff));
+			break;
+		case GUI::Pin::Color:
+			rect.setFillColor(sf::Color(0xaa7700ff));
 			break;
 
 	}
