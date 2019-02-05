@@ -9,7 +9,7 @@ int main() {
 
 	// Create a texture and a sprite for the shader
 	sf::RenderTexture targetTexture;
-	if (!targetTexture.create(1024, 1024))
+	if (!targetTexture.create(512, 512))
 		return -1;
 
 	sf::Shader shader;
@@ -20,11 +20,11 @@ int main() {
 	}
 
 	sf::Texture textureA, textureB;
-	if (!textureA.loadFromFile("mulA.jpg"))
+	if (!textureA.loadFromFile("addA.png"))
 	{
 		std::cout << "Image file not available\n";
 	}
-	if (!textureB.loadFromFile("mulB.jpg"))
+	if (!textureB.loadFromFile("addB.png"))
 	{
 		std::cout << "Image file not available\n";
 	}
@@ -33,6 +33,7 @@ int main() {
 
 	shader.setParameter("tex0", textureA);
 	shader.setParameter("tex1", textureB);
+	shader.setParameter("res", sf::Vector2f(512, 512));
 
 
 	while (window.isOpen()) {
@@ -55,14 +56,16 @@ int main() {
                     	result.saveToFile("addResult.png");
                     }
                 }
+                case sf::Event::MouseMoved:
+				{
+					sf::Vector2f v(event.mouseMove.x, event.mouseMove.y);
+					shader.setParameter("mouse", v);
+				}
             }
 		}
 
 		// Draw the sprite with the shader on it
 		window.clear(sf::Color(0xaa2233ff));
-
-		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-		shader.setParameter("a", mousePos.x);
 
 		sf::Sprite spr(targetTexture.getTexture());
 		targetTexture.draw(spr, &shader);

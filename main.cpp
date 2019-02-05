@@ -220,16 +220,15 @@ int main()
 						{
 							int inputTypes[6];
 							int outputTypes[1];
-							std::string inputStrings[6] = {"Integer", "Float", "Vector2i", "Recti", "Image", "Color"};
+							std::string inputStrings[6] = {"Integer", "Float", "Vector2i", "Image", "Color"};
 							std::string outputStrings[1] = {"r"};
 							inputTypes[0] = GUI::Pin::Integer;
 							inputTypes[1] = GUI::Pin::Float;
 							inputTypes[2] = GUI::Pin::Vector2i;
-							inputTypes[3] = GUI::Pin::Recti;
-							inputTypes[4] = GUI::Pin::Image;
-							inputTypes[5] = GUI::Pin::Color;
+							inputTypes[3] = GUI::Pin::Image;
+							inputTypes[4] = GUI::Pin::Color;
 							outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(new GUI::Node("ZZZZZZZZ", inputTypes, inputStrings, 6, outputTypes, outputStrings, 1, sf::Vector2f(20, 50), font));
+							nodes.push_back(new GUI::Node("ZZZZZZZZ", inputTypes, inputStrings, 5, outputTypes, outputStrings, 1, sf::Vector2f(20, 50), font));
 							break;
 						}
 					}

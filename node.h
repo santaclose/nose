@@ -4,6 +4,8 @@ namespace GUI
 	bool isVectorOverRect(const sf::Vector2f& vector, const sf::RectangleShape& rect);
 	bool isVectorOverRect(const sf::Vector2f& vector, const sf::Vector2f& rectPosition, const sf::Vector2f& rectSize);
 
+	class Node;
+
 	class Pin 
 	{
 	private:
@@ -14,6 +16,9 @@ namespace GUI
 		sf::Text text;
 		int stringOutputOffsetX;
 		sf::RectangleShape rect;
+		Node* parentNode;
+		void* data; // Integer, Float, Image or any type
+
 		std::vector<sf::Vertex*> connectionVertices;
 		std::vector<Pin*> connectedPins;
 	//public:
@@ -22,13 +27,13 @@ namespace GUI
 			Integer,
 			Float,
 			Vector2i,
-			Recti,
 			Image,
 			Color
 		};
 		static const Type pinTypes;
 
-		Pin(const std::string& name, const int type, const bool isInput, const sf::Font& font);
+		Pin(const std::string& name, const int type, const bool isInput, const sf::Font& font, Node* parentNode);
+		~Pin();
 		bool isMouseOver(sf::Vector2f& mousePos);
 		bool isDisconnected();
 		void establishConnection(sf::Vertex* newConnectionVertex, Pin* other);
@@ -52,6 +57,16 @@ namespace GUI
 		bool isMouseOverBar(sf::Vector2f& mousePos);
 		bool isMouseOverContent(sf::Vector2f& mousePos);
 		bool isMouseOverPin(sf::Vector2f& mousePos, Pin*& resultingPin);
-		//bool isMouseOverConnectablePin(sf::Vector2f& mousePos, sf::Vector2f& pinRectCenterReturn, Pin*& resultingPin);
 	};
+/*
+	class InteractiveNode : public Node
+	{
+	public:
+		sf::RectangleShape interactionComponentRect;
+		sf::Text interactionComponentText;
+
+		InteractiveNode(const std::string& name, const int outputType, const std::string& outputName, const sf::Vector2f& initialPosition, const sf::Font& font);
+
+		void setPosition(const sf::Vector2f& newPosition);
+	};*/
 }
