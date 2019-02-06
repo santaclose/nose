@@ -231,6 +231,14 @@ int main()
 							nodes.push_back(new GUI::Node("ZZZZZZZZ", inputTypes, inputStrings, 5, outputTypes, outputStrings, 1, sf::Vector2f(20, 50), font));
 							break;
 						}
+						case sf::Keyboard::F:
+						{
+							int outputTypes[1];
+							std::string outputStrings[1] = {"Value"};
+							outputTypes[0] = GUI::Pin::Float;
+							nodes.push_back(new GUI::InteractiveNode("Float", nullptr, nullptr, 0, outputTypes, outputStrings, 1, sf::Vector2f(20, 50), font));
+							break;
+						}
 					}
 				}
 			}

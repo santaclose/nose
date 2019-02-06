@@ -297,13 +297,29 @@ GUI::InteractiveNode::InteractiveNode(const std::string& name, const int outputT
 			break;
 	}
 
-	setPosition(initialPosition);
+	this->setPosition(initialPosition);
+}
+*/
+
+GUI::InteractiveNode::InteractiveNode(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const sf::Vector2f& initialPosition, const sf::Font& font) : GUI::Node(name, inputTypes, inputNames, inputCount, outputTypes, outputNames, outputCount, initialPosition, font)
+{
+	float prevContentHeight = PROPERTY_HEIGHT * (outputCount > inputCount ? outputCount : inputCount) + CONTENT_MARGIN_TOP;
+	float contentHeight = PROPERTY_HEIGHT + CONTENT_MARGIN_TOP + INTERACTIVE_COMPONENT_HEIGHT;
+	this->contentRect.setScale(sf::Vector2f(1.0, contentHeight/prevContentHeight));
+
+	this->interactionComponentRect = sf::RectangleShape(sf::Vector2f(NODE_WIDTH * 0.9, INTERACTIVE_COMPONENT_HEIGHT * 0.8));
+	this->interactionComponentRect.setFillColor(sf::Color(INTERACTIVE_COMPONENT_COLOR));
+
+	this->interactionComponentText.setFillColor(sf::Color(TEXT_COLOR));
+	this->interactionComponentText.setFont(font);
+	this->interactionComponentText.setCharacterSize(INTERACTIVE_COMPONENT_TEXT_FONT_SIZE);
+	this->setPosition(initialPosition);
 }
 
 void GUI::InteractiveNode::setPosition(const sf::Vector2f& newPosition)
 {
-	Base::setPosition(newPosition);
+	Node::setPosition(newPosition);
 
-	interactionComponentRect.setPosition(newPosition + sf::Vector2f(NODE_WIDTH * 0.9, BAR_HEIGHT + PROPERTY_HEIGHT + CONTENT_MARGIN_TOP + 0.8 * INTERACTIVE_COMPONENT_HEIGHT));
-	interactionComponentText.setPosition(interactionComponentRect.getPosition() + sf::Vector2f((NODE_WIDTH - NODE_WIDTH * 0.2)/2.0 - 10, (INTERACTIVE_COMPONENT_HEIGHT - INTERACTIVE_COMPONENT_HEIGHT * 0.4)/2.0) - 10);
-}*/
+	this->interactionComponentRect.setPosition(newPosition + sf::Vector2f(NODE_WIDTH * 0.9, BAR_HEIGHT + PROPERTY_HEIGHT + CONTENT_MARGIN_TOP + 0.8 * INTERACTIVE_COMPONENT_HEIGHT));
+	this->interactionComponentText.setPosition(interactionComponentRect.getPosition() + sf::Vector2f((NODE_WIDTH - NODE_WIDTH * 0.2)/2.0 - 10, (INTERACTIVE_COMPONENT_HEIGHT - INTERACTIVE_COMPONENT_HEIGHT * 0.4)/2.0 - 10));
+}

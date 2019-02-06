@@ -52,21 +52,21 @@ namespace GUI
 
 		Node(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const sf::Vector2f& initialPosition, const sf::Font& font);
 		~Node();
-		void setPosition(const sf::Vector2f& newPosition);
+		virtual void setPosition(const sf::Vector2f& newPosition);
 		sf::Vector2f getPosition();
 		bool isMouseOverBar(sf::Vector2f& mousePos);
 		bool isMouseOverContent(sf::Vector2f& mousePos);
 		bool isMouseOverPin(sf::Vector2f& mousePos, Pin*& resultingPin);
 	};
-/*
+
 	class InteractiveNode : public Node
 	{
 	public:
 		sf::RectangleShape interactionComponentRect;
 		sf::Text interactionComponentText;
 
-		InteractiveNode(const std::string& name, const int outputType, const std::string& outputName, const sf::Vector2f& initialPosition, const sf::Font& font);
+		InteractiveNode(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const sf::Vector2f& initialPosition, const sf::Font& font);
 
 		void setPosition(const sf::Vector2f& newPosition);
-	};*/
+	};
 }
