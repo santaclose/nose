@@ -50,13 +50,15 @@ namespace GUI
 		std::vector<Pin*> inputPins;
 		std::vector<Pin*> outputPins;
 
-		Node(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const sf::Vector2f& initialPosition, const sf::Font& font);
+		Node(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const sf::Font& font);
 		~Node();
 		virtual void setPosition(const sf::Vector2f& newPosition);
 		sf::Vector2f getPosition();
 		bool isMouseOverBar(sf::Vector2f& mousePos);
 		bool isMouseOverContent(sf::Vector2f& mousePos);
 		bool isMouseOverPin(sf::Vector2f& mousePos, Pin*& resultingPin);
+		virtual bool isMouseOverInteractionComponent(sf::Vector2f& mousePos);
+		virtual void draw(sf::RenderWindow& window);
 	};
 
 	class InteractiveNode : public Node
@@ -65,8 +67,11 @@ namespace GUI
 		sf::RectangleShape interactionComponentRect;
 		sf::Text interactionComponentText;
 
-		InteractiveNode(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const sf::Vector2f& initialPosition, const sf::Font& font);
+		InteractiveNode(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const sf::Font& font);
 
-		void setPosition(const sf::Vector2f& newPosition);
+		void setPosition(const sf::Vector2f& newPosition) override;
+		bool isMouseOverInteractionComponent(sf::Vector2f& mousePos) override;
+		void setValue(float value);
+		void draw(sf::RenderWindow& window) override;
 	};
 }
