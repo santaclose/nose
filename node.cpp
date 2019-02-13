@@ -79,7 +79,7 @@ GUI::Pin::Pin(const std::string& name, const int type, const bool isInput, const
 	this->parentNode = parentNode;
 	this->type = type;
 	this->isInput = isInput;
-	this->data = nullptr;
+	//this->data = nullptr;
 
 	if (!isInput)
 		this->stringOutputOffsetX = name.length() * CHARACTER_WIDTH;
@@ -91,6 +91,26 @@ GUI::Pin::Pin(const std::string& name, const int type, const bool isInput, const
 	this->text.setFont(font);
 	this->text.setCharacterSize(PIN_TEXT_FONT_SIZE);
 	this->text.setString(name);
+
+	switch(this->type)
+	{
+		case GUI::Pin::Integer:
+			this->data = new int(1);
+			break;
+		case GUI::Pin::Float:
+			this->data = new float(0.5);
+			break;
+		case GUI::Pin::Vector2i:
+			this->data = new sf::Vector2i();
+			break;
+		case GUI::Pin::Image:
+			this->data = new sf::RenderTexture();
+			break;
+		case GUI::Pin::Color:
+			this->data = new sf::Color();
+			break;
+	}
+
 }
 GUI::Pin::~Pin()
 {
@@ -157,7 +177,7 @@ void GUI::Pin::disconnectFrom(GUI::Pin*& p)
 
 //////////// nodes
 
-GUI::Node::Node(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const sf::Font& font)
+GUI::Node::Node(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font)
 {
 	std::cout << "construct node" << std::endl;
 	float contentHeight = PROPERTY_HEIGHT * (outputCount > inputCount ? outputCount : inputCount) + CONTENT_MARGIN_TOP;
@@ -170,6 +190,8 @@ GUI::Node::Node(const std::string& name, const int* inputTypes, const std::strin
 	this->title.setFont(font);
 	this->title.setCharacterSize(14);
 	this->title.setString(name);
+
+	this->action = action;
 
 	for (int i = 0; i < inputCount; i++)
 	{
@@ -269,6 +291,12 @@ bool GUI::Node::isMouseOverInteractionComponent(sf::Vector2f& mousePos)
 void GUI::Node::paintAsSelected()
 {
 	barRect.setFillColor(sf::Color(SELECTED_BAR_COLOR));
+	this->action(this->inputPins, this->outputPins);
+	if (outputPins[0]->type == GUI::Pin::Vector2i)
+	{
+		sf::Vector2i temp = *((sf::Vector2i*)outputPins[0]->data);
+		std::cout << temp.x << ", " << temp.y << "\n";
+	}
 }
 void GUI::Node::paintAsUnselected()
 {
@@ -294,12 +322,10 @@ void GUI::Node::draw(sf::RenderWindow& window)
 
 /////////// typeNodes
 
-GUI::InteractiveNode::InteractiveNode(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const sf::Font& font) : GUI::Node(name, inputTypes, inputNames, inputCount, outputTypes, outputNames, outputCount, font)
+GUI::InteractiveNode::InteractiveNode(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font) : GUI::Node(name, inputTypes, inputNames, inputCount, outputTypes, outputNames, outputCount, action, font)
 {
 	std::cout << "construct interactive node" << std::endl;
-	/*float prevContentHeight = PROPERTY_HEIGHT * (outputCount > inputCount ? outputCount : inputCount) + CONTENT_MARGIN_TOP;
-	float contentHeight = PROPERTY_HEIGHT + CONTENT_MARGIN_TOP + INTERACTIVE_COMPONENT_HEIGHT;
-	this->contentRect.setScale(sf::Vector2f(1.0, contentHeight/prevContentHeight));*/
+	// setting the size again :(
 	this->contentRect.setSize(sf::Vector2f(NODE_WIDTH, PROPERTY_HEIGHT + CONTENT_MARGIN_TOP + INTERACTIVE_COMPONENT_HEIGHT));
 
 	this->interactionComponentRect = sf::RectangleShape(sf::Vector2f(NODE_WIDTH * 0.9, INTERACTIVE_COMPONENT_HEIGHT * 0.6));
@@ -310,15 +336,10 @@ GUI::InteractiveNode::InteractiveNode(const std::string& name, const int* inputT
 	this->interactionComponentText.setCharacterSize(INTERACTIVE_COMPONENT_TEXT_FONT_SIZE);
 
 	if (outputTypes[0] == GUI::Pin::Float)
-	{
 		this->interactionComponentText.setString("0.5");
-		this->outputPins[0]->data = new float(0.5);
-	}
+
 	else if (outputTypes[0] == GUI::Pin::Integer)
-	{
 		this->interactionComponentText.setString("1");
-		this->outputPins[0]->data = new int(1);
-	}
 }
 
 void GUI::InteractiveNode::setPosition(const sf::Vector2f& newPosition)

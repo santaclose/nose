@@ -1,6 +1,16 @@
-namespace NF
+namespace NodeActions
 {
-	sf::Image* Add (const sf::Image& a, const sf::Image& b, bool clamp)
+	const void VectoriFromIntegers(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
+	{
+		sf::Vector2i* outputPointer = ((sf::Vector2i*)outputPins[0]->data);
+		if (inputPins[0]->connectedPins.size() > 0)
+			outputPointer->x = *((int*) inputPins[0]->connectedPins[0]->data);
+		if (inputPins[1]->connectedPins.size() > 0)
+			outputPointer->y = *((int*) inputPins[1]->connectedPins[0]->data);
+	}
+
+	//////////// trash
+	/*sf::Image* Add (const sf::Image& a, const sf::Image& b, bool clamp)
 	{
 		sf::Vector2u size = a.getSize();
 
@@ -49,5 +59,5 @@ namespace NF
 			}
 		}
 		return result;
-	}
+	}*/
 }

@@ -39,7 +39,7 @@ void createOutputNode()
 	std::string inputStrings[1] = {"Resulting Image"};
 	inputTypes[0] = GUI::Pin::Image;
 	GUI::Node* newNode;
-	nodes.push_back(newNode = new GUI::Node("Output", inputTypes, inputStrings, 1, nullptr, nullptr, 0, font));
+	nodes.push_back(newNode = new GUI::Node("Output", inputTypes, inputStrings, 1, nullptr, nullptr, 0, nullptr, font));
 	newNode->setPosition(sf::Vector2f(1000, 380));
 }
 
@@ -258,7 +258,7 @@ int main()
 							std::string inputStrings[2] = {"A", "B"};
 							std::string outputStrings[1] = {"Result"};
 							inputTypes[0] = inputTypes[1] = outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(newNode = new GUI::Node("Add", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, font));
+							nodes.push_back(newNode = new GUI::Node("Add", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, nullptr, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
@@ -270,7 +270,7 @@ int main()
 							std::string outputStrings[1] = {"Result"};
 							inputTypes[0] = outputTypes[0] = GUI::Pin::Image;
 							inputTypes[1] = GUI::Pin::Vector2i;
-							nodes.push_back(newNode = new GUI::Node("Repeat", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, font));
+							nodes.push_back(newNode = new GUI::Node("Repeat", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, nullptr, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
@@ -279,7 +279,7 @@ int main()
 							int outputTypes[1];
 							std::string outputStrings[1] = {"Image"};
 							outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(newNode = new GUI::Node("Image", nullptr, nullptr, 0, outputTypes, outputStrings, 1, font));
+							nodes.push_back(newNode = new GUI::Node("Image", nullptr, nullptr, 0, outputTypes, outputStrings, 1, nullptr, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
@@ -293,7 +293,7 @@ int main()
 							inputTypes[1] = GUI::Pin::Integer;
 							inputTypes[2] = inputTypes[3] = GUI::Pin::Color;
 							outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(newNode = new GUI::Node("Checker", inputTypes, inputStrings, 4, outputTypes, outputStrings, 1, font));
+							nodes.push_back(newNode = new GUI::Node("Checker", inputTypes, inputStrings, 4, outputTypes, outputStrings, 1, nullptr, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
@@ -309,7 +309,7 @@ int main()
 							inputTypes[3] = GUI::Pin::Image;
 							inputTypes[4] = GUI::Pin::Color;
 							outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(newNode = new GUI::Node("ZZZZZZZZ", inputTypes, inputStrings, 5, outputTypes, outputStrings, 1, font));
+							nodes.push_back(newNode = new GUI::Node("ZZZZZZZZ", inputTypes, inputStrings, 5, outputTypes, outputStrings, 1, nullptr, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
@@ -318,7 +318,7 @@ int main()
 							int outputTypes[1];
 							std::string outputStrings[1] = {"Value"};
 							outputTypes[0] = GUI::Pin::Integer;
-							nodes.push_back(newNode = new GUI::InteractiveNode("Integer", nullptr, nullptr, 0, outputTypes, outputStrings, 1, font));
+							nodes.push_back(newNode = new GUI::InteractiveNode("Integer", nullptr, nullptr, 0, outputTypes, outputStrings, 1, nullptr, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
@@ -327,7 +327,7 @@ int main()
 							int outputTypes[1];
 							std::string outputStrings[1] = {"Value"};
 							outputTypes[0] = GUI::Pin::Float;
-							nodes.push_back(newNode = new GUI::InteractiveNode("Float", nullptr, nullptr, 0, outputTypes, outputStrings, 1, font));
+							nodes.push_back(newNode = new GUI::InteractiveNode("Float", nullptr, nullptr, 0, outputTypes, outputStrings, 1, nullptr, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
@@ -339,7 +339,7 @@ int main()
 							std::string outputStrings[1] = {"Vector2i"};
 							inputTypes[0] = inputTypes[1] = GUI::Pin::Integer;
 							outputTypes[0] = GUI::Pin::Vector2i;
-							nodes.push_back(newNode = new GUI::Node("Construct Vector2i", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, font));
+							nodes.push_back(newNode = new GUI::Node("Construct Vector2i", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, NodeActions::VectoriFromIntegers, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
@@ -351,7 +351,7 @@ int main()
 							std::string outputStrings[1] = {"Color"};
 							inputTypes[0] = inputTypes[1] = inputTypes[2] = inputTypes[3] = GUI::Pin::Integer;
 							outputTypes[0] = GUI::Pin::Color;
-							nodes.push_back(newNode = new GUI::Node("Construct Color", inputTypes, inputStrings, 4, outputTypes, outputStrings, 1, font));
+							nodes.push_back(newNode = new GUI::Node("Construct Color", inputTypes, inputStrings, 4, outputTypes, outputStrings, 1, nullptr, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
