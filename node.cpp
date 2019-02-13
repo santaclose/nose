@@ -5,6 +5,7 @@
 
 #define TEXT_COLOR 0xffffff
 #define BAR_COLOR 0x2f2fbb
+#define SELECTED_BAR_COLOR 0xaa2233ff
 #define CONTENT_RECT_COLOR 0x4444bb
 #define INTERACTIVE_COMPONENT_COLOR 0x2424aa
 
@@ -263,6 +264,15 @@ bool GUI::Node::isMouseOverPin(sf::Vector2f& mousePos, Pin*& resultingPin)
 bool GUI::Node::isMouseOverInteractionComponent(sf::Vector2f& mousePos)
 {
 	return false;
+}
+
+void GUI::Node::paintAsSelected()
+{
+	barRect.setFillColor(sf::Color(SELECTED_BAR_COLOR));
+}
+void GUI::Node::paintAsUnselected()
+{
+	barRect.setFillColor(sf::Color(BAR_COLOR));
 }
 
 void GUI::Node::draw(sf::RenderWindow& window)

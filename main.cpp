@@ -17,6 +17,8 @@ public:
 
 sf::Font font;
 
+GUI::Node* selectedNode = nullptr;
+
 GUI::Node* draggingNode = nullptr;
 sf::Vector2f startDraggingMousePosition;
 sf::Vector2f startDraggingNodePosition;
@@ -39,6 +41,14 @@ void createOutputNode()
 	GUI::Node* newNode;
 	nodes.push_back(newNode = new GUI::Node("Output", inputTypes, inputStrings, 1, nullptr, nullptr, 0, font));
 	newNode->setPosition(sf::Vector2f(1000, 380));
+}
+
+void deleteConnectionLine(int& i)
+{
+	connectionLines[i]->pins[0]->disconnectFrom(connectionLines[i]->pins[1]);
+	connectionLines[i]->pins[1]->disconnectFrom(connectionLines[i]->pins[0]);
+	delete connectionLines[i];
+	connectionLines.erase(connectionLines.begin() + i);
 }
 
 int main()
@@ -107,10 +117,7 @@ int main()
 										{
 											if (connectionLines[i]->pins[0] == p || connectionLines[i]->pins[1] == p)
 											{
-												connectionLines[i]->pins[0]->disconnectFrom(connectionLines[i]->pins[1]);
-												connectionLines[i]->pins[1]->disconnectFrom(connectionLines[i]->pins[0]);
-												delete connectionLines[i];
-												connectionLines.erase(connectionLines.begin() + i);
+												deleteConnectionLine(i);
 												break;
 											}
 										}
@@ -132,6 +139,29 @@ int main()
 										*editingValue = *((float*)n->outputPins[0]->data);
 									startDraggingMousePosition = mousePos;
 									editingNode = (GUI::InteractiveNode*) n;
+								}
+							}
+						}
+					}
+					else if (event.mouseButton.button == sf::Mouse::Right)
+					{
+						sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
+
+						for (GUI::Node* n : nodes)
+						{
+							if (n->isMouseOverBar(mousePos))
+							{
+								if (n == selectedNode)
+								{
+									selectedNode = nullptr;
+									n->paintAsUnselected();
+								}
+								else
+								{
+									if (selectedNode != nullptr)
+										selectedNode->paintAsUnselected();
+									n->paintAsSelected();
+									selectedNode = n;
 								}
 							}
 						}
@@ -191,9 +221,26 @@ int main()
 
 					if (editingNode != nullptr) // user is setting a value
 					{
-						*editingValue += (event.mouseMove.x - startDraggingMousePosition.x) * 0.01;
+						int disp = event.mouseMove.x - startDraggingMousePosition.x;
+						*editingValue += disp*disp*disp * (editingType == GUI::Pin::Float ? 0.01 : 0.1);
+
+						/*if (event.mouseMove.x < 0.0)
+						{
+							startDraggingMousePosition.x = window.getSize().x;
+							sf::Mouse::setPosition(sf::Vector2i(window.getPosition().x + window.getSize().x, event.mouseMove.y + window.getPosition().y));
+						}
+						else if (event.mouseMove.x > window.getSize().x)
+						{
+							startDraggingMousePosition.x = 0;
+							sf::Mouse::setPosition(sf::Vector2i(window.getPosition().x, event.mouseMove.y + window.getPosition().y));
+						}
+						else
+						{*/
+							//startDraggingMousePosition.x = event.mouseMove.x;
+							editingNode->setValue(*editingValue);
+						//}
+						
 						startDraggingMousePosition.x = event.mouseMove.x;
-						editingNode->setValue(*editingValue);
 					}
 
 					newConnection.vertices[1].position = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
@@ -212,6 +259,7 @@ int main()
 							std::string outputStrings[1] = {"Result"};
 							inputTypes[0] = inputTypes[1] = outputTypes[0] = GUI::Pin::Image;
 							nodes.push_back(newNode = new GUI::Node("Add", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, font));
+							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
 						case sf::Keyboard::R:
@@ -223,6 +271,7 @@ int main()
 							inputTypes[0] = outputTypes[0] = GUI::Pin::Image;
 							inputTypes[1] = GUI::Pin::Vector2i;
 							nodes.push_back(newNode = new GUI::Node("Repeat", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, font));
+							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
 						case sf::Keyboard::I:
@@ -231,6 +280,7 @@ int main()
 							std::string outputStrings[1] = {"Image"};
 							outputTypes[0] = GUI::Pin::Image;
 							nodes.push_back(newNode = new GUI::Node("Image", nullptr, nullptr, 0, outputTypes, outputStrings, 1, font));
+							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
 						case sf::Keyboard::C:
@@ -244,6 +294,7 @@ int main()
 							inputTypes[2] = inputTypes[3] = GUI::Pin::Color;
 							outputTypes[0] = GUI::Pin::Image;
 							nodes.push_back(newNode = new GUI::Node("Checker", inputTypes, inputStrings, 4, outputTypes, outputStrings, 1, font));
+							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
 						case sf::Keyboard::Z:
@@ -259,26 +310,98 @@ int main()
 							inputTypes[4] = GUI::Pin::Color;
 							outputTypes[0] = GUI::Pin::Image;
 							nodes.push_back(newNode = new GUI::Node("ZZZZZZZZ", inputTypes, inputStrings, 5, outputTypes, outputStrings, 1, font));
+							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
-						case sf::Keyboard::F:
-						{
-							int outputTypes[1];
-							std::string outputStrings[1] = {"Value"};
-							outputTypes[0] = GUI::Pin::Float;
-							nodes.push_back(newNode = new GUI::InteractiveNode("Float", nullptr, nullptr, 0, outputTypes, outputStrings, 1, font));
-							break;
-						}
-						case sf::Keyboard::N:
+						case sf::Keyboard::Num0:
 						{
 							int outputTypes[1];
 							std::string outputStrings[1] = {"Value"};
 							outputTypes[0] = GUI::Pin::Integer;
 							nodes.push_back(newNode = new GUI::InteractiveNode("Integer", nullptr, nullptr, 0, outputTypes, outputStrings, 1, font));
+							newNode->setPosition(sf::Vector2f(50, 50));
+							break;
+						}
+						case sf::Keyboard::Num1:
+						{
+							int outputTypes[1];
+							std::string outputStrings[1] = {"Value"};
+							outputTypes[0] = GUI::Pin::Float;
+							nodes.push_back(newNode = new GUI::InteractiveNode("Float", nullptr, nullptr, 0, outputTypes, outputStrings, 1, font));
+							newNode->setPosition(sf::Vector2f(50, 50));
+							break;
+						}
+						case sf::Keyboard::Num2:
+						{
+							int inputTypes[2];
+							int outputTypes[1];
+							std::string inputStrings[2] = {"X", "Y"};
+							std::string outputStrings[1] = {"Vector2i"};
+							inputTypes[0] = inputTypes[1] = GUI::Pin::Integer;
+							outputTypes[0] = GUI::Pin::Vector2i;
+							nodes.push_back(newNode = new GUI::Node("Construct Vector2i", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, font));
+							newNode->setPosition(sf::Vector2f(50, 50));
+							break;
+						}
+						case sf::Keyboard::Num3:
+						{
+							int inputTypes[4];
+							int outputTypes[1];
+							std::string inputStrings[4] = {"R", "G", "B", "A"};
+							std::string outputStrings[1] = {"Color"};
+							inputTypes[0] = inputTypes[1] = inputTypes[2] = inputTypes[3] = GUI::Pin::Integer;
+							outputTypes[0] = GUI::Pin::Color;
+							nodes.push_back(newNode = new GUI::Node("Construct Color", inputTypes, inputStrings, 4, outputTypes, outputStrings, 1, font));
+							newNode->setPosition(sf::Vector2f(50, 50));
+							break;
+						}
+
+						//////////////////////// other than node creation
+						case sf::Keyboard::Delete:
+						{
+							if (selectedNode == nullptr)
+								break;
+
+							// delete all conections and node
+							for (GUI::Pin* p : selectedNode->inputPins)
+							{
+								for (int i = 0; i < connectionLines.size(); i++) // finding a single connection line
+								{
+									if (connectionLines[i]->pins[0] == p || connectionLines[i]->pins[1] == p)
+									{
+										deleteConnectionLine(i);
+										break;
+									}
+								}
+							}
+							for (GUI::Pin* p : selectedNode->outputPins)
+							{
+								for (int i = 0; i < connectionLines.size(); i++) // finding a single connection line
+								{
+									if (connectionLines[i]->pins[0] == p || connectionLines[i]->pins[1] == p)
+									{
+										deleteConnectionLine(i);
+										break;
+									}
+								}
+							}
+
+							delete selectedNode; // free node memory
+
+							int i = 0;
+							for (GUI::Node* n : nodes) // remove from nodes vector
+							{
+								if (n == selectedNode)
+								{
+									nodes.erase(nodes.begin() + i);
+									selectedNode = nullptr;
+									break;
+								}
+								i++;
+							}
 							break;
 						}
 					}
-					newNode->setPosition(sf::Vector2f(50, 50));
 				}
 			}
 		}
