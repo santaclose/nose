@@ -101,13 +101,13 @@ GUI::Pin::Pin(const std::string& name, const int type, const bool isInput, const
 			this->data = new float(0.5);
 			break;
 		case GUI::Pin::Vector2i:
-			this->data = new sf::Vector2i();
+			this->data = new sf::Vector2i(0, 0);
 			break;
 		case GUI::Pin::Image:
 			this->data = new sf::RenderTexture();
 			break;
 		case GUI::Pin::Color:
-			this->data = new sf::Color();
+			this->data = new sf::Color(255, 0, 255, 255);
 			break;
 	}
 
@@ -155,10 +155,7 @@ void GUI::Pin::establishConnection(sf::Vertex* newConnectionVertex, GUI::Pin* ot
 	this->connectionVertices.push_back(newConnectionVertex);
 	this->connectedPins.push_back(otherPin);
 
-	Node* pn = this->parentNode;
-
-	if (pn->hasAllInputData())
-		pn->action(pn->inputPins, pn->outputPins);
+	this->parentNode->activate();
 }
 
 sf::Vector2f GUI::Pin::getRectCenter()
@@ -180,7 +177,7 @@ void GUI::Pin::disconnectFrom(GUI::Pin*& p)
 	}
 }
 
-//////////// nodes
+//////////// NODES //////////////////
 
 GUI::Node::Node(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font)
 {
@@ -216,6 +213,58 @@ GUI::Node::~Node()
 	for (Pin* p : outputPins)
 		delete p;
 	outputPins.clear();
+}
+
+void GUI::Node::activate() // tries to compute
+{
+	if (this->action == nullptr) // node cannot compute
+	{
+		std::cout << "Not computing " << this->title.getString().toAnsiString() << std::endl;
+		return;
+	}
+
+	if (this->hasAllInputData())
+	{
+		//testing
+		std::cout << "Computing " << this->title.getString().toAnsiString() << std::endl;
+
+		this->action(this->inputPins, this->outputPins);
+		for (Pin* p : this->outputPins)
+		{
+			p->dataAvailable = true;
+
+			switch (p->type)	//testing
+			{
+				case GUI::Pin::Integer:
+				{
+					std::cout << *((int*)p->data) << std::endl;
+					break;
+				}
+				case GUI::Pin::Float:
+				{
+					std::cout << *((float*)p->data) << std::endl;
+					break;
+				}
+				case GUI::Pin::Vector2i:
+				{
+					sf::Vector2i* debug = ((sf::Vector2i*)p->data);
+					std::cout << debug->x << ", " << debug->y << std::endl;
+					break;
+				}
+				case GUI::Pin::Image:
+				{
+					std::cout << "image generated?" << std::endl;
+					break;
+				}
+				case GUI::Pin::Color:
+				{
+					sf::Color* debug = ((sf::Color*)p->data);
+					std::cout << unsigned(debug->r) << ", " << unsigned(debug->g) << ", " << unsigned(debug->b) << ", " << unsigned(debug->a) << std::endl;
+					break;
+				}
+			}
+		}
+	}
 }
 
 void GUI::Node::setPosition(const sf::Vector2f& newPosition)
@@ -292,8 +341,12 @@ bool GUI::Node::hasAllInputData()
 {
 	for (Pin* p : inputPins)
 	{
-		
+		if (p->connectedPins.size() == 0) // one input not connected
+			return false;
+		if (!p->connectedPins[0]->dataAvailable) // one input does not have data
+			return false;
 	}
+	return true;
 }
 
 bool GUI::Node::isMouseOverInteractionComponent(sf::Vector2f& mousePos)
@@ -347,6 +400,8 @@ GUI::InteractiveNode::InteractiveNode(const std::string& name, const int* inputT
 
 	else if (outputTypes[0] == GUI::Pin::Integer)
 		this->interactionComponentText.setString("1");
+
+	this->outputPins[0]->dataAvailable = true; // all interactive nodes have data ready when instantiated
 }
 
 void GUI::InteractiveNode::setPosition(const sf::Vector2f& newPosition)

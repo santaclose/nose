@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <SFML/Graphics.hpp>
 #include "node.h"
 #include "nodeActions.h"
@@ -221,6 +222,13 @@ int main()
 						int disp = event.mouseMove.x - startDraggingMousePosition.x;
 						*editingValue += disp*disp*disp * (editingType == GUI::Pin::Float ? 0.01 : 0.1);
 
+						std::vector<GUI::Node*> computedNodes;
+						for (GUI::Pin* p : editingNode->outputPins[0]->connectedPins) // there should be only one output pin
+						{
+							if (std::find(computedNodes.begin(), computedNodes.end(), p->parentNode) == computedNodes.end()) // if not already computed
+								p->parentNode->activate();
+						}
+
 						/*if (event.mouseMove.x < 0.0)
 						{
 							startDraggingMousePosition.x = window.getSize().x;
@@ -348,7 +356,7 @@ int main()
 							std::string outputStrings[1] = {"Color"};
 							inputTypes[0] = inputTypes[1] = inputTypes[2] = inputTypes[3] = GUI::Pin::Integer;
 							outputTypes[0] = GUI::Pin::Color;
-							nodes.push_back(newNode = new GUI::Node("Construct Color", inputTypes, inputStrings, 4, outputTypes, outputStrings, 1, nullptr, font));
+							nodes.push_back(newNode = new GUI::Node("Construct Color", inputTypes, inputStrings, 4, outputTypes, outputStrings, 1, NodeActions::ColorFromIntegers, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}

@@ -14,10 +14,11 @@ namespace GUI
 		int type;
 		bool isInput;
 		sf::Text text;
-		int stringOutputOffsetX;
+		int stringOutputOffsetX;	//  only for output pins
+		bool dataAvailable;			//  only for output pins
 		sf::RectangleShape rect;
 		Node* parentNode;
-		void* data; // Integer, Float, Image or any type
+		void* data; // Integer, Float, Image or any type //  only for output pins
 
 		std::vector<sf::Vertex*> connectionVertices;
 		std::vector<Pin*> connectedPins;
@@ -54,6 +55,7 @@ namespace GUI
 
 		Node(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font);
 		~Node();
+		void activate();
 		virtual void setPosition(const sf::Vector2f& newPosition);
 		sf::Vector2f getPosition();
 		bool isMouseOverBar(sf::Vector2f& mousePos);
