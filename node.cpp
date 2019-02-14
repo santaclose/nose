@@ -154,6 +154,11 @@ void GUI::Pin::establishConnection(sf::Vertex* newConnectionVertex, GUI::Pin* ot
 {
 	this->connectionVertices.push_back(newConnectionVertex);
 	this->connectedPins.push_back(otherPin);
+
+	Node* pn = this->parentNode;
+
+	if (pn->hasAllInputData())
+		pn->action(pn->inputPins, pn->outputPins);
 }
 
 sf::Vector2f GUI::Pin::getRectCenter()
@@ -264,7 +269,7 @@ bool GUI::Node::isMouseOverContent(sf::Vector2f& mousePos)
 
 bool GUI::Node::isMouseOverPin(sf::Vector2f& mousePos, Pin*& resultingPin)
 {
-	for (auto p : inputPins)
+	for (Pin* p : inputPins)
 	{
 		if (p->isMouseOver(mousePos))
 		{
@@ -272,7 +277,7 @@ bool GUI::Node::isMouseOverPin(sf::Vector2f& mousePos, Pin*& resultingPin)
 			return true;
 		}
 	}
-	for (auto p : outputPins)
+	for (Pin* p : outputPins)
 	{
 		if (p->isMouseOver(mousePos))
 		{
@@ -281,6 +286,14 @@ bool GUI::Node::isMouseOverPin(sf::Vector2f& mousePos, Pin*& resultingPin)
 		}
 	}
 	return false;
+}
+
+bool GUI::Node::hasAllInputData()
+{
+	for (Pin* p : inputPins)
+	{
+		
+	}
 }
 
 bool GUI::Node::isMouseOverInteractionComponent(sf::Vector2f& mousePos)
@@ -291,12 +304,6 @@ bool GUI::Node::isMouseOverInteractionComponent(sf::Vector2f& mousePos)
 void GUI::Node::paintAsSelected()
 {
 	barRect.setFillColor(sf::Color(SELECTED_BAR_COLOR));
-	this->action(this->inputPins, this->outputPins);
-	if (outputPins[0]->type == GUI::Pin::Vector2i)
-	{
-		sf::Vector2i temp = *((sf::Vector2i*)outputPins[0]->data);
-		std::cout << temp.x << ", " << temp.y << "\n";
-	}
 }
 void GUI::Node::paintAsUnselected()
 {

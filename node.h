@@ -59,6 +59,7 @@ namespace GUI
 		bool isMouseOverBar(sf::Vector2f& mousePos);
 		bool isMouseOverContent(sf::Vector2f& mousePos);
 		bool isMouseOverPin(sf::Vector2f& mousePos, Pin*& resultingPin);
+		bool hasAllInputData();
 		virtual bool isMouseOverInteractionComponent(sf::Vector2f& mousePos);
 		void paintAsSelected();
 		void paintAsUnselected();

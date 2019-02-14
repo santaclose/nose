@@ -93,10 +93,9 @@ int main()
 				}
 				case sf::Event::MouseButtonPressed:
 				{
+					sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
 					if (event.mouseButton.button == sf::Mouse::Left)
 					{
-						sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
-
 						for (GUI::Node* n : nodes)
 						{
 							if (n->isMouseOverBar(mousePos))
@@ -145,8 +144,6 @@ int main()
 					}
 					else if (event.mouseButton.button == sf::Mouse::Right)
 					{
-						sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
-
 						for (GUI::Node* n : nodes)
 						{
 							if (n->isMouseOverBar(mousePos))
