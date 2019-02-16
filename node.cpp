@@ -150,12 +150,19 @@ bool GUI::Pin::isDisconnected()
 	return connectionVertices.empty();
 }
 
-void GUI::Pin::establishConnection(sf::Vertex* newConnectionVertex, GUI::Pin* otherPin)
+void GUI::Pin::establishConnection(sf::Vertex* newConnectionVertex, GUI::Pin* otherPin, bool isSecondConnection)
 {
 	this->connectionVertices.push_back(newConnectionVertex);
 	this->connectedPins.push_back(otherPin);
 
-	this->parentNode->activate();
+	if (!isSecondConnection) // first connection, cannot activate yet
+		return;
+
+	// activate the left side node
+	if (!this->isInput)
+		this->parentNode->activate();
+	else
+		otherPin->parentNode->activate();
 }
 
 sf::Vector2f GUI::Pin::getRectCenter()
@@ -182,6 +189,10 @@ void GUI::Pin::disconnectFrom(GUI::Pin*& p)
 GUI::Node::Node(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font)
 {
 	std::cout << "construct node" << std::endl;
+
+	this->isInteractive = false;
+	this->isOutputNode = false;
+
 	float contentHeight = PROPERTY_HEIGHT * (outputCount > inputCount ? outputCount : inputCount) + CONTENT_MARGIN_TOP;
 	this->barRect = sf::RectangleShape(sf::Vector2f(NODE_WIDTH, BAR_HEIGHT));
 	this->barRect.setFillColor(sf::Color(BAR_COLOR));
@@ -219,49 +230,61 @@ void GUI::Node::activate() // tries to compute
 {
 	if (this->action == nullptr) // node cannot compute
 	{
-		std::cout << "Not computing " << this->title.getString().toAnsiString() << std::endl;
+		std::cout << "Node " << this->title.getString().toAnsiString() << "has no action." << std::endl;
+		return;
+	}
+	
+	if (!this->hasAllInputData())
+	{
+		std::cout << "Not enough data to compute " << this->title.getString().toAnsiString() << std::endl;
 		return;
 	}
 
-	if (this->hasAllInputData())
+	std::cout << "Computing " << this->title.getString().toAnsiString() << std::endl;
+
+	this->action(this->inputPins, this->outputPins);
+	for (Pin* outputPin : this->outputPins)
 	{
-		//testing
-		std::cout << "Computing " << this->title.getString().toAnsiString() << std::endl;
-
-		this->action(this->inputPins, this->outputPins);
-		for (Pin* p : this->outputPins)
+		outputPin->dataAvailable = true;
+		std::vector<GUI::Node*> computedNodes;
+		for (Pin* p : outputPin->connectedPins)
 		{
-			p->dataAvailable = true;
-
-			switch (p->type)	//testing
+			if (std::find(computedNodes.begin(), computedNodes.end(), p->parentNode) == computedNodes.end()) // if not already computed
 			{
-				case GUI::Pin::Integer:
-				{
-					std::cout << *((int*)p->data) << std::endl;
-					break;
-				}
-				case GUI::Pin::Float:
-				{
-					std::cout << *((float*)p->data) << std::endl;
-					break;
-				}
-				case GUI::Pin::Vector2i:
-				{
-					sf::Vector2i* debug = ((sf::Vector2i*)p->data);
-					std::cout << debug->x << ", " << debug->y << std::endl;
-					break;
-				}
-				case GUI::Pin::Image:
-				{
-					std::cout << "image generated?" << std::endl;
-					break;
-				}
-				case GUI::Pin::Color:
-				{
-					sf::Color* debug = ((sf::Color*)p->data);
-					std::cout << unsigned(debug->r) << ", " << unsigned(debug->g) << ", " << unsigned(debug->b) << ", " << unsigned(debug->a) << std::endl;
-					break;
-				}
+				p->parentNode->activate();
+				computedNodes.push_back(p->parentNode);
+			}
+		}
+		computedNodes.clear();
+
+		switch (outputPin->type)	//testing
+		{
+			case GUI::Pin::Integer:
+			{
+				std::cout << *((int*)outputPin->data) << std::endl;
+				break;
+			}
+			case GUI::Pin::Float:
+			{
+				std::cout << *((float*)outputPin->data) << std::endl;
+				break;
+			}
+			case GUI::Pin::Vector2i:
+			{
+				sf::Vector2i* debug = ((sf::Vector2i*)outputPin->data);
+				std::cout << debug->x << ", " << debug->y << std::endl;
+				break;
+			}
+			case GUI::Pin::Image:
+			{
+				std::cout << "image generated?" << std::endl;
+				break;
+			}
+			case GUI::Pin::Color:
+			{
+				sf::Color* debug = ((sf::Color*)outputPin->data);
+				std::cout << unsigned(debug->r) << ", " << unsigned(debug->g) << ", " << unsigned(debug->b) << ", " << unsigned(debug->a) << std::endl;
+				break;
 			}
 		}
 	}
@@ -380,11 +403,14 @@ void GUI::Node::draw(sf::RenderWindow& window)
 	}
 }
 
-/////////// typeNodes
+/////////// interactive nodes
 
 GUI::InteractiveNode::InteractiveNode(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font) : GUI::Node(name, inputTypes, inputNames, inputCount, outputTypes, outputNames, outputCount, action, font)
 {
 	std::cout << "construct interactive node" << std::endl;
+
+	this->isInteractive = true;
+
 	// setting the size again :(
 	this->contentRect.setSize(sf::Vector2f(NODE_WIDTH, PROPERTY_HEIGHT + CONTENT_MARGIN_TOP + INTERACTIVE_COMPONENT_HEIGHT));
 
@@ -402,6 +428,21 @@ GUI::InteractiveNode::InteractiveNode(const std::string& name, const int* inputT
 		this->interactionComponentText.setString("1");
 
 	this->outputPins[0]->dataAvailable = true; // all interactive nodes have data ready when instantiated
+}
+
+void GUI::InteractiveNode::activate() // propagates activation
+{
+	std::cout << "Not computing " << this->title.getString().toAnsiString() << std::endl;
+	std::vector<GUI::Node*> computedNodes;
+	for (Pin* p : this->outputPins[0]->connectedPins) // should be only one output pin
+	{
+		if (std::find(computedNodes.begin(), computedNodes.end(), p->parentNode) == computedNodes.end()) // if not already computed
+		{
+			p->parentNode->activate();
+			computedNodes.push_back(p->parentNode);
+		}
+	}
+	computedNodes.clear();
 }
 
 void GUI::InteractiveNode::setPosition(const sf::Vector2f& newPosition)
@@ -436,4 +477,26 @@ void GUI::InteractiveNode::draw(sf::RenderWindow& window)
 	Node::draw(window);
 	window.draw(this->interactionComponentRect);
 	window.draw(this->interactionComponentText);
+}
+
+/////////// interactive nodes
+
+GUI::OutputNode::OutputNode(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font, sf::RenderWindow* window) : GUI::Node(name, inputTypes, inputNames, inputCount, outputTypes, outputNames, outputCount, action, font)
+{
+	std::cout << "construct output node" << std::endl;
+	this->isOutputNode = true;
+	this->window = window;
+}
+
+void GUI::OutputNode::activate()
+{
+	if (this->hasAllInputData())
+	{
+		//std::cout << "Drawing output" << std::endl;
+		sf::RenderTexture* pointer = (sf::RenderTexture*) inputPins[0]->connectedPins[0]->data;
+
+		sf::Sprite spr(pointer->getTexture());
+		spr.setPosition(20, 20);
+		this->window->draw(spr);
+	}
 }

@@ -37,7 +37,7 @@ namespace GUI
 		~Pin();
 		bool isMouseOver(sf::Vector2f& mousePos);
 		bool isDisconnected();
-		void establishConnection(sf::Vertex* newConnectionVertex, Pin* other);
+		void establishConnection(sf::Vertex* newConnectionVertex, Pin* other, bool isSecondConnection);
 		sf::Vector2f getRectCenter();
 		void disconnectFrom(Pin*& p);
 	};
@@ -45,6 +45,8 @@ namespace GUI
 	class Node
 	{
 	public:
+		bool isInteractive;
+		bool isOutputNode;
 		sf::Text title;
 		sf::RectangleShape barRect;
 		sf::RectangleShape contentRect;
@@ -55,14 +57,14 @@ namespace GUI
 
 		Node(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font);
 		~Node();
-		void activate();
+		virtual void activate();
 		virtual void setPosition(const sf::Vector2f& newPosition);
 		sf::Vector2f getPosition();
 		bool isMouseOverBar(sf::Vector2f& mousePos);
 		bool isMouseOverContent(sf::Vector2f& mousePos);
 		bool isMouseOverPin(sf::Vector2f& mousePos, Pin*& resultingPin);
 		bool hasAllInputData();
-		virtual bool isMouseOverInteractionComponent(sf::Vector2f& mousePos);
+		virtual bool isMouseOverInteractionComponent(sf::Vector2f& mousePos); // implemented for normal nodes to return false always
 		void paintAsSelected();
 		void paintAsUnselected();
 		virtual void draw(sf::RenderWindow& window);
@@ -76,9 +78,20 @@ namespace GUI
 
 		InteractiveNode(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font);
 
+		void activate();
 		void setPosition(const sf::Vector2f& newPosition) override;
 		bool isMouseOverInteractionComponent(sf::Vector2f& mousePos) override;
 		void setValue(float value);
 		void draw(sf::RenderWindow& window) override;
+	};
+
+	class OutputNode : public Node
+	{
+	private:
+		sf::RenderWindow* window;
+	public:
+		OutputNode(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font, sf::RenderWindow* window);
+
+		void activate();
 	};
 }

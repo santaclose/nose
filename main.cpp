@@ -9,14 +9,15 @@
 #include "node.h"
 #include "nodeActions.h"
 
-class ConnectionLine
+struct ConnectionLine
 {
-public:
 	GUI::Pin* pins[2];
 	sf::Vertex vertices[2];
 };
 
 sf::Font font;
+
+GUI::OutputNode* outputNode = nullptr;
 
 GUI::Node* selectedNode = nullptr;
 
@@ -34,14 +35,13 @@ float* editingValue;
 std::vector<GUI::Node*> nodes;
 std::vector<ConnectionLine*> connectionLines;
 
-void createOutputNode()
+void createOutputNode(sf::RenderWindow& window)
 {
 	int inputTypes[1];
 	std::string inputStrings[1] = {"Resulting Image"};
 	inputTypes[0] = GUI::Pin::Image;
-	GUI::Node* newNode;
-	nodes.push_back(newNode = new GUI::Node("Output", inputTypes, inputStrings, 1, nullptr, nullptr, 0, nullptr, font));
-	newNode->setPosition(sf::Vector2f(1000, 380));
+	nodes.push_back(outputNode = new GUI::OutputNode("Output", inputTypes, inputStrings, 1, nullptr, nullptr, 0, nullptr, font, &window));
+	outputNode->setPosition(sf::Vector2f(1000, 380));
 }
 
 void deleteConnectionLine(int& i)
@@ -58,10 +58,10 @@ int main()
 
 	font.loadFromFile("firacode.ttf");
 
-	createOutputNode();
-
 	// create the window
 	sf::RenderWindow window(sf::VideoMode(1200, 800), "nose");
+
+	createOutputNode(window);
 
 	window.setFramerateLimit(60); // 10
 
@@ -147,7 +147,7 @@ int main()
 					{
 						for (GUI::Node* n : nodes)
 						{
-							if (n->isMouseOverBar(mousePos))
+							if (n->isMouseOverBar(mousePos) && !n->isOutputNode)
 							{
 								if (n == selectedNode)
 								{
@@ -188,8 +188,8 @@ int main()
 											a->pins[0] = newConnection.pins[0];
 											a->pins[1] = p;
 
-											a->pins[0]->establishConnection(&a->vertices[0], a->pins[1]);
-											a->pins[1]->establishConnection(&a->vertices[1], a->pins[0]);
+											a->pins[0]->establishConnection(&a->vertices[0], a->pins[1], false);
+											a->pins[1]->establishConnection(&a->vertices[1], a->pins[0], true);
 											
 											connectionLines.push_back(a);
 										}
@@ -220,14 +220,9 @@ int main()
 					if (editingNode != nullptr) // user is setting a value
 					{
 						int disp = event.mouseMove.x - startDraggingMousePosition.x;
-						*editingValue += disp*disp*disp * (editingType == GUI::Pin::Float ? 0.01 : 0.1);
+						*editingValue += disp*disp*disp * (editingType == GUI::Pin::Float ? 0.01 : 0.1); // drag function
 
-						std::vector<GUI::Node*> computedNodes;
-						for (GUI::Pin* p : editingNode->outputPins[0]->connectedPins) // there should be only one output pin
-						{
-							if (std::find(computedNodes.begin(), computedNodes.end(), p->parentNode) == computedNodes.end()) // if not already computed
-								p->parentNode->activate();
-						}
+						editingNode->activate();
 
 						/*if (event.mouseMove.x < 0.0)
 						{
@@ -298,10 +293,34 @@ int main()
 							inputTypes[1] = GUI::Pin::Integer;
 							inputTypes[2] = inputTypes[3] = GUI::Pin::Color;
 							outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(newNode = new GUI::Node("Checker", inputTypes, inputStrings, 4, outputTypes, outputStrings, 1, nullptr, font));
+							nodes.push_back(newNode = new GUI::Node("Checker", inputTypes, inputStrings, 4, outputTypes, outputStrings, 1, NodeActions::Checker, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
+						case sf::Keyboard::G:
+						{
+							int inputTypes[1];
+							int outputTypes[1];
+							std::string inputStrings[1] = {"Image size"};
+							std::string outputStrings[1] = {"Result"};
+							inputTypes[0] = GUI::Pin::Vector2i;
+							outputTypes[0] = GUI::Pin::Image;
+							nodes.push_back(newNode = new GUI::Node("Linear Gradient", inputTypes, inputStrings, 1, outputTypes, outputStrings, 1, NodeActions::LinearGradient, font));
+							newNode->setPosition(sf::Vector2f(50, 50));
+							break;
+						}
+						case sf::Keyboard::M:
+						{
+							int inputTypes[2];
+							int outputTypes[1];
+							std::string inputStrings[2] = {"A", "B"};
+							std::string outputStrings[1] = {"Result"};
+							inputTypes[0] = inputTypes[1] = GUI::Pin::Image;
+							outputTypes[0] = GUI::Pin::Image;
+							nodes.push_back(newNode = new GUI::Node("Multiply", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, NodeActions::Multiply, font));
+							newNode->setPosition(sf::Vector2f(50, 50));
+							break;
+						}/*
 						case sf::Keyboard::Z:
 						{
 							int inputTypes[6];
@@ -317,8 +336,8 @@ int main()
 							nodes.push_back(newNode = new GUI::Node("ZZZZZZZZ", inputTypes, inputStrings, 5, outputTypes, outputStrings, 1, nullptr, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
-						}
-						case sf::Keyboard::Num0:
+						}*/
+						case sf::Keyboard::Numpad0:
 						{
 							int outputTypes[1];
 							std::string outputStrings[1] = {"Value"};
@@ -327,7 +346,7 @@ int main()
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
-						case sf::Keyboard::Num1:
+						case sf::Keyboard::Numpad1:
 						{
 							int outputTypes[1];
 							std::string outputStrings[1] = {"Value"};
@@ -336,7 +355,7 @@ int main()
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
-						case sf::Keyboard::Num2:
+						case sf::Keyboard::Numpad2:
 						{
 							int inputTypes[2];
 							int outputTypes[1];
@@ -348,7 +367,7 @@ int main()
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
-						case sf::Keyboard::Num3:
+						case sf::Keyboard::Numpad3:
 						{
 							int inputTypes[4];
 							int outputTypes[1];
@@ -426,6 +445,8 @@ int main()
 
 		if (creatingConnection)
 			window.draw(newConnection.vertices, 2, sf::Lines);
+
+		outputNode->activate();
 
 		// end the current frame
 

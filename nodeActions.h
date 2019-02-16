@@ -16,6 +16,56 @@ namespace NodeActions
 		outputPointer->a = *((int*) inputPins[3]->connectedPins[0]->data);
 	}
 
+	const void Checker(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
+	{
+		sf::RenderTexture* outputPointer = ((sf::RenderTexture*) outputPins[0]->data);
+		sf::Vector2i* imageSize = ((sf::Vector2i*) inputPins[0]->connectedPins[0]->data);
+
+		outputPointer->create(imageSize->x, imageSize->y);
+
+		sf::Shader shader;
+		shader.loadFromFile("shaders/checker.glsl", sf::Shader::Fragment); // load the shader
+		shader.setParameter("colorA", *((sf::Color*) inputPins[2]->connectedPins[0]->data));
+		shader.setParameter("colorB", *((sf::Color*) inputPins[3]->connectedPins[0]->data));
+		shader.setParameter("squareSize", *((int*) inputPins[1]->connectedPins[0]->data));
+
+		sf::Sprite spr(outputPointer->getTexture());
+		outputPointer->draw(spr, &shader);
+	}
+
+	const void LinearGradient(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
+	{
+		sf::RenderTexture* outputPointer = ((sf::RenderTexture*) outputPins[0]->data);
+		sf::Vector2i* imageSize = ((sf::Vector2i*) inputPins[0]->connectedPins[0]->data);
+
+		outputPointer->create(imageSize->x, imageSize->y);
+
+		sf::Shader shader;
+		shader.loadFromFile("shaders/gradient.glsl", sf::Shader::Fragment); // load the shader
+		shader.setParameter("xResolution", imageSize->x);
+
+		sf::Sprite spr(outputPointer->getTexture());
+		outputPointer->draw(spr, &shader);
+	}
+
+	const void Multiply(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
+	{
+		sf::RenderTexture* outputPointer = ((sf::RenderTexture*) outputPins[0]->data);
+		sf::RenderTexture* a = ((sf::RenderTexture*) inputPins[0]->connectedPins[0]->data);
+		sf::RenderTexture* b = ((sf::RenderTexture*) inputPins[1]->connectedPins[0]->data);
+
+		sf::Vector2u size = a->getSize();
+		outputPointer->create(size.x, size.y);
+
+		sf::Shader shader;
+		shader.loadFromFile("shaders/multiply.glsl", sf::Shader::Fragment); // load the shader
+		shader.setParameter("tex0", a->getTexture());
+		shader.setParameter("tex1", b->getTexture());
+
+		sf::Sprite spr(outputPointer->getTexture());
+		outputPointer->draw(spr, &shader);
+	}
+
 	//////////// trash
 	/*sf::Image* Add (const sf::Image& a, const sf::Image& b, bool clamp)
 	{
