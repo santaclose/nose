@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <SFML/Graphics.hpp>
 #include "node.h"
+sf::Shader* shaders;
 #include "nodeActions.h"
 
 struct ConnectionLine
@@ -52,18 +53,27 @@ void deleteConnectionLine(int& i)
 	connectionLines.erase(connectionLines.begin() + i);
 }
 
-int main()
+inline void init(sf::RenderWindow& window)
 {
 	editingValue = new float(0.0);
-
 	font.loadFromFile("firacode.ttf");
 
-	// create the window
-	sf::RenderWindow window(sf::VideoMode(1200, 800), "nose");
+	shaders = new sf::Shader[5];
+	shaders[0].loadFromFile("shaders/checker.glsl", sf::Shader::Fragment);
+	shaders[1].loadFromFile("shaders/gradient.glsl", sf::Shader::Fragment);
+	shaders[2].loadFromFile("shaders/multiply.glsl", sf::Shader::Fragment);
+	shaders[3].loadFromFile("shaders/rotate90.glsl", sf::Shader::Fragment);
+	shaders[4].loadFromFile("shaders/repeat.glsl", sf::Shader::Fragment);
 
 	createOutputNode(window);
-
 	window.setFramerateLimit(60); // 10
+}
+
+int main()
+{
+	// create the window
+	sf::RenderWindow window(sf::VideoMode(1200, 800), "nose");
+	init(window);
 
 	// run the program as long as the window is open
 
@@ -77,6 +87,7 @@ int main()
 			{
 				case sf::Event::Closed:
 				{
+					delete[] shaders;
 					delete editingValue;
 					for (GUI::Node* n : nodes)
 						delete n;
@@ -270,7 +281,7 @@ int main()
 							std::string outputStrings[1] = {"Result"};
 							inputTypes[0] = outputTypes[0] = GUI::Pin::Image;
 							inputTypes[1] = GUI::Pin::Vector2i;
-							nodes.push_back(newNode = new GUI::Node("Repeat", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, nullptr, font));
+							nodes.push_back(newNode = new GUI::Node("Repeat", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, NodeActions::Repeat, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}
@@ -318,6 +329,18 @@ int main()
 							inputTypes[0] = inputTypes[1] = GUI::Pin::Image;
 							outputTypes[0] = GUI::Pin::Image;
 							nodes.push_back(newNode = new GUI::Node("Multiply", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, NodeActions::Multiply, font));
+							newNode->setPosition(sf::Vector2f(50, 50));
+							break;
+						}
+						case sf::Keyboard::O:
+						{
+							int inputTypes[2];
+							int outputTypes[1];
+							std::string inputStrings[1] = {"Image"};
+							std::string outputStrings[1] = {"Result"};
+							inputTypes[0] = GUI::Pin::Image;
+							outputTypes[0] = GUI::Pin::Image;
+							nodes.push_back(newNode = new GUI::Node("Rotate 90", inputTypes, inputStrings, 1, outputTypes, outputStrings, 1, NodeActions::Rotate90, font));
 							newNode->setPosition(sf::Vector2f(50, 50));
 							break;
 						}/*
