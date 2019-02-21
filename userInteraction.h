@@ -107,6 +107,9 @@ inline void EventMouseRightDown(sf::Vector2f& mousePos)
 {
 	for (GUI::Node* n : nodes)
 	{
+		if (!n->isMouseOver(mousePos))
+			continue;
+
 		if (n->isMouseOverBar(mousePos) && !n->isOutputNode)
 		{
 			if (n == selectedNode)
@@ -121,6 +124,7 @@ inline void EventMouseRightDown(sf::Vector2f& mousePos)
 				n->paintAsSelected();
 				selectedNode = n;
 			}
+			break;
 		}
 	}
 }
@@ -331,6 +335,7 @@ inline void EventKeyPressed(sf::Keyboard::Key keyCode)
 					}
 				}
 			}
+
 			for (GUI::Pin* p : selectedNode->outputPins)
 			{
 				for (int i = 0; i < connectionLines.size(); i++) // finding a single connection line
@@ -359,4 +364,13 @@ inline void EventKeyPressed(sf::Keyboard::Key keyCode)
 			break;
 		}
 	}
+}
+
+inline void EventTextEntered(char c)
+{
+	if (editingNode == nullptr)
+		return;
+
+	if (currentInputIndex >= INPUT_BUFFER_SIZE)
+		return;
 }

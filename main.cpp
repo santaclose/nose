@@ -1,4 +1,5 @@
 #define BACKGROUND_COLOR 0x2121ff
+#define INPUT_BUFFER_SIZE 20
 
 #include <fstream>
 #include <iostream>
@@ -30,11 +31,15 @@ bool creatingConnection = false;
 ConnectionLine newConnection;
 
 GUI::InteractiveNode* editingNode = nullptr;
-int editingType = -1;
-float* editingValue;
 
 std::vector<GUI::Node*> nodes;
 std::vector<ConnectionLine*> connectionLines;
+
+int editingType = -1;
+float* editingValue;
+
+int currentInputIndex;
+char inputField[INPUT_BUFFER_SIZE];
 
 #include "userInteraction.h"
 
@@ -68,11 +73,6 @@ int main()
 	// create the window
 	sf::RenderWindow window(sf::VideoMode(1200, 800), "nose");
 	init(window);
-
-	sf::Sprite rrrrr;
-	rrrrr.setTextureRect(sf::IntRect(10, 10, 256, 256));
-	sf::Shader sssss;
-	sssss.loadFromFile("shaders/checker.glsl", sf::Shader::Fragment);
 
 	// run the program as long as the window is open
 
@@ -135,6 +135,11 @@ int main()
 					EventKeyPressed(event.key.code);
 					break;
 				}
+				case sf::Event::TextEntered:
+				{
+					EventTextEntered(event.text.unicode);
+					break;
+				}
 			}
 		}
 
@@ -155,8 +160,6 @@ int main()
 			window.draw(newConnection.vertices, 2, sf::Lines);
 
 		outputNode->activate();
-
-		window.draw(rrrrr, &sssss);
 
 		// end the current frame
 
