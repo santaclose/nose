@@ -32,7 +32,7 @@
 
 /////////// generic
 
-bool GUI::isVectorOverRect(const sf::Vector2f& vector, const sf::RectangleShape& rect)
+bool GUI::isPointOverRect(const sf::Vector2f& vector, const sf::RectangleShape& rect)
 {
 	sf::Vector2f pos = rect.getPosition();
 	sf::Vector2f size = rect.getSize();
@@ -40,7 +40,7 @@ bool GUI::isVectorOverRect(const sf::Vector2f& vector, const sf::RectangleShape&
 	return vector.x > pos.x && vector.x < pos.x + size.x && vector.y > pos.y && vector.y < pos.y + size.y;
 }
 
-bool GUI::isVectorOverRect(const sf::Vector2f& vector, const sf::Vector2f& rectPosition, const sf::Vector2f& rectSize)
+bool GUI::isPointOverRect(const sf::Vector2f& vector, const sf::Vector2f& rectPosition, const sf::Vector2f& rectSize)
 {
 	return vector.x > rectPosition.x && vector.x < rectPosition.x + rectSize.x && vector.y > rectPosition.y && vector.y < rectPosition.y + rectSize.y;
 }
@@ -140,7 +140,7 @@ bool GUI::Pin::isMouseOver(sf::Vector2f& mousePos)
 	sf::Vector2f pos = rect.getPosition();
 	pos -= size;
 	size = sf::Vector2f(size.x * 3, size.y * 3);
-	if (isVectorOverRect(mousePos, pos, size))
+	if (isPointOverRect(mousePos, pos, size))
 		return true;
 	return false;
 }
@@ -329,14 +329,21 @@ sf::Vector2f GUI::Node::getPosition()
 	return barRect.getPosition();
 }
 
+bool GUI::Node::isMouseOver(sf::Vector2f& mousePos)
+{
+	sf::Vector2f barSize = barRect.getSize();
+
+	return isPointOverRect(mousePos, barRect.getPosition(), sf::Vector2f(barSize.x, barSize.y + contentRect.getSize().y));
+}
+
 bool GUI::Node::isMouseOverBar(sf::Vector2f& mousePos)
 {
-	return isVectorOverRect(mousePos, barRect);
+	return isPointOverRect(mousePos, barRect);
 }
 
 bool GUI::Node::isMouseOverContent(sf::Vector2f& mousePos)
 {
-	return isVectorOverRect(mousePos, contentRect);
+	return isPointOverRect(mousePos, contentRect);
 }
 
 bool GUI::Node::isMouseOverPin(sf::Vector2f& mousePos, Pin*& resultingPin)
@@ -455,7 +462,7 @@ void GUI::InteractiveNode::setPosition(const sf::Vector2f& newPosition)
 
 bool GUI::InteractiveNode::isMouseOverInteractionComponent(sf::Vector2f& mousePos)
 {
-	return isVectorOverRect(mousePos, interactionComponentRect);
+	return isPointOverRect(mousePos, interactionComponentRect);
 }
 
 void GUI::InteractiveNode::setValue(float value)

@@ -1,8 +1,9 @@
+#pragma once
 
 namespace GUI
 {
-	bool isVectorOverRect(const sf::Vector2f& vector, const sf::RectangleShape& rect);
-	bool isVectorOverRect(const sf::Vector2f& vector, const sf::Vector2f& rectPosition, const sf::Vector2f& rectSize);
+	bool isPointOverRect(const sf::Vector2f& vector, const sf::RectangleShape& rect);
+	bool isPointOverRect(const sf::Vector2f& vector, const sf::Vector2f& rectPosition, const sf::Vector2f& rectSize);
 
 	class Node;
 
@@ -11,10 +12,10 @@ namespace GUI
 	private:
 		void assignColor(const int inputType, sf::RectangleShape& rect);
 	public:
+		int stringOutputOffsetX;	//  only for output pins
 		int type;
 		bool isInput;
 		sf::Text text;
-		int stringOutputOffsetX;	//  only for output pins
 		bool dataAvailable;			//  only for output pins
 		sf::RectangleShape rect;
 		Node* parentNode;
@@ -60,6 +61,7 @@ namespace GUI
 		virtual void activate();
 		virtual void setPosition(const sf::Vector2f& newPosition);
 		sf::Vector2f getPosition();
+		bool isMouseOver(sf::Vector2f& mousePos);
 		bool isMouseOverBar(sf::Vector2f& mousePos);
 		bool isMouseOverContent(sf::Vector2f& mousePos);
 		bool isMouseOverPin(sf::Vector2f& mousePos, Pin*& resultingPin);

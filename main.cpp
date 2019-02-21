@@ -36,6 +36,8 @@ float* editingValue;
 std::vector<GUI::Node*> nodes;
 std::vector<ConnectionLine*> connectionLines;
 
+#include "userInteraction.h"
+
 void createOutputNode(sf::RenderWindow& window)
 {
 	int inputTypes[1];
@@ -43,14 +45,6 @@ void createOutputNode(sf::RenderWindow& window)
 	inputTypes[0] = GUI::Pin::Image;
 	nodes.push_back(outputNode = new GUI::OutputNode("Output", inputTypes, inputStrings, 1, nullptr, nullptr, 0, nullptr, font, &window));
 	outputNode->setPosition(sf::Vector2f(1000, 380));
-}
-
-void deleteConnectionLine(int& i)
-{
-	connectionLines[i]->pins[0]->disconnectFrom(connectionLines[i]->pins[1]);
-	connectionLines[i]->pins[1]->disconnectFrom(connectionLines[i]->pins[0]);
-	delete connectionLines[i];
-	connectionLines.erase(connectionLines.begin() + i);
 }
 
 inline void init(sf::RenderWindow& window)
@@ -75,6 +69,11 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(1200, 800), "nose");
 	init(window);
 
+	sf::Sprite rrrrr;
+	rrrrr.setTextureRect(sf::IntRect(10, 10, 256, 256));
+	sf::Shader sssss;
+	sssss.loadFromFile("shaders/checker.glsl", sf::Shader::Fragment);
+
 	// run the program as long as the window is open
 
 	while (window.isOpen())
@@ -96,6 +95,7 @@ int main()
 						delete c;
 					connectionLines.clear();
 					window.close();
+					return 0;
 					break;
 				}
 				case sf::Event::Resized:
@@ -108,347 +108,32 @@ int main()
 					sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
 					if (event.mouseButton.button == sf::Mouse::Left)
 					{
-						for (GUI::Node* n : nodes)
-						{
-							if (n->isMouseOverBar(mousePos))
-							{
-								draggingNode = n;
-								startDraggingMousePosition = mousePos;
-								startDraggingNodePosition = n->getPosition();
-							}
-							else if (n->isMouseOverContent(mousePos))
-							{
-								std::cout << "mouse is over content\n";
-								GUI::Pin* p;
-								if (n->isMouseOverPin(mousePos, p))
-								{
-									if (!p->isDisconnected() && p->isInput)
-									{
-										for (int i = 0; i < connectionLines.size(); i++) // finding a single connection line
-										{
-											if (connectionLines[i]->pins[0] == p || connectionLines[i]->pins[1] == p)
-											{
-												deleteConnectionLine(i);
-												break;
-											}
-										}
-									}
-									if (!p->isInput || p->isInput && p->isDisconnected())
-									{
-										newConnection.pins[0] = p;
-										newConnection.vertices[0].position = p->getRectCenter();
-										creatingConnection = true;
-									}
-								}
-								else if (n->isMouseOverInteractionComponent(mousePos))
-								{
-									editingType = n->outputPins[0]->type;
-									std::cout << "editing " << editingType << std::endl;
-									if (editingType == GUI::Pin::Integer)
-										*editingValue = (float)*((int*)n->outputPins[0]->data);
-									else
-										*editingValue = *((float*)n->outputPins[0]->data);
-									startDraggingMousePosition = mousePos;
-									editingNode = (GUI::InteractiveNode*) n;
-								}
-							}
-						}
+						EventMouseLeftDown(mousePos);
 					}
 					else if (event.mouseButton.button == sf::Mouse::Right)
 					{
-						for (GUI::Node* n : nodes)
-						{
-							if (n->isMouseOverBar(mousePos) && !n->isOutputNode)
-							{
-								if (n == selectedNode)
-								{
-									selectedNode = nullptr;
-									n->paintAsUnselected();
-								}
-								else
-								{
-									if (selectedNode != nullptr)
-										selectedNode->paintAsUnselected();
-									n->paintAsSelected();
-									selectedNode = n;
-								}
-							}
-						}
+						EventMouseRightDown(mousePos);
 					}
 					break;
 				}
 				case sf::Event::MouseButtonReleased:
 				{
+					sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
 					if (event.mouseButton.button == sf::Mouse::Left)
 					{
-						if (creatingConnection)
-						{
-							sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
-							for (GUI::Node* n : nodes)
-							{
-								if (n->isMouseOverContent(mousePos))
-								{
-									GUI::Pin* p;
-									if (n->isMouseOverPin(mousePos, p))
-									{
-										if ((!p->isInput || p->isInput && p->isDisconnected()) && p->isInput != newConnection.pins[0]->isInput && p->type == newConnection.pins[0]->type) // valid connection
-										{
-											ConnectionLine* a = new ConnectionLine();
-											a->vertices[0] = newConnection.vertices[0];
-											a->vertices[1].position = p->getRectCenter();
-											a->pins[0] = newConnection.pins[0];
-											a->pins[1] = p;
-
-											a->pins[0]->establishConnection(&a->vertices[0], a->pins[1], false);
-											a->pins[1]->establishConnection(&a->vertices[1], a->pins[0], true);
-											
-											connectionLines.push_back(a);
-										}
-									}
-								}
-							}
-						}
-
-						editingNode = nullptr;
-						draggingNode = nullptr;
-						creatingConnection = false;
+						EventMouseLeftUp(mousePos);
 					}
 					break;
 				}
 				case sf::Event::MouseMoved:
 				{
-					if (draggingNode != nullptr) // user is dragging a node
-					{
-						// compute displacement
-						sf::Vector2f displacement(event.mouseMove.x, event.mouseMove.y);
-						displacement -= startDraggingMousePosition;
-
-						// update position
-						sf::Vector2f currentPos = startDraggingNodePosition + displacement;
-						draggingNode->setPosition(currentPos);
-					}
-
-					if (editingNode != nullptr) // user is setting a value
-					{
-						int disp = event.mouseMove.x - startDraggingMousePosition.x;
-						*editingValue += disp*disp*disp * (editingType == GUI::Pin::Float ? 0.01 : 0.1); // drag function
-
-						editingNode->activate();
-
-						/*if (event.mouseMove.x < 0.0)
-						{
-							startDraggingMousePosition.x = window.getSize().x;
-							sf::Mouse::setPosition(sf::Vector2i(window.getPosition().x + window.getSize().x, event.mouseMove.y + window.getPosition().y));
-						}
-						else if (event.mouseMove.x > window.getSize().x)
-						{
-							startDraggingMousePosition.x = 0;
-							sf::Mouse::setPosition(sf::Vector2i(window.getPosition().x, event.mouseMove.y + window.getPosition().y));
-						}
-						else
-						{*/
-							//startDraggingMousePosition.x = event.mouseMove.x;
-							editingNode->setValue(*editingValue);
-						//}
-						
-						startDraggingMousePosition.x = event.mouseMove.x;
-					}
-
-					newConnection.vertices[1].position = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
+					EventMouseMoved(event.mouseMove);
 					break;
 				}
 				case sf::Event::KeyPressed:
 				{
-					GUI::Node* newNode;
-					switch (event.key.code)
-					{
-						case sf::Keyboard::A:
-						{
-							int inputTypes[2];
-							int outputTypes[1];
-							std::string inputStrings[2] = {"A", "B"};
-							std::string outputStrings[1] = {"Result"};
-							inputTypes[0] = inputTypes[1] = outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(newNode = new GUI::Node("Add", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, nullptr, font));
-							newNode->setPosition(sf::Vector2f(50, 50));
-							break;
-						}
-						case sf::Keyboard::R:
-						{
-							int inputTypes[2];
-							int outputTypes[1];
-							std::string inputStrings[2] = {"Image", "Output Size"};
-							std::string outputStrings[1] = {"Result"};
-							inputTypes[0] = outputTypes[0] = GUI::Pin::Image;
-							inputTypes[1] = GUI::Pin::Vector2i;
-							nodes.push_back(newNode = new GUI::Node("Repeat", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, NodeActions::Repeat, font));
-							newNode->setPosition(sf::Vector2f(50, 50));
-							break;
-						}
-						case sf::Keyboard::I:
-						{
-							int outputTypes[1];
-							std::string outputStrings[1] = {"Image"};
-							outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(newNode = new GUI::Node("Image", nullptr, nullptr, 0, outputTypes, outputStrings, 1, nullptr, font));
-							newNode->setPosition(sf::Vector2f(50, 50));
-							break;
-						}
-						case sf::Keyboard::C:
-						{
-							int inputTypes[4];
-							int outputTypes[1];
-							std::string inputStrings[4] = {"Image size", "Square size", "Color A", "Color B"};
-							std::string outputStrings[1] = {"Result"};
-							inputTypes[0] = GUI::Pin::Vector2i;
-							inputTypes[1] = GUI::Pin::Integer;
-							inputTypes[2] = inputTypes[3] = GUI::Pin::Color;
-							outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(newNode = new GUI::Node("Checker", inputTypes, inputStrings, 4, outputTypes, outputStrings, 1, NodeActions::Checker, font));
-							newNode->setPosition(sf::Vector2f(50, 50));
-							break;
-						}
-						case sf::Keyboard::G:
-						{
-							int inputTypes[1];
-							int outputTypes[1];
-							std::string inputStrings[1] = {"Image size"};
-							std::string outputStrings[1] = {"Result"};
-							inputTypes[0] = GUI::Pin::Vector2i;
-							outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(newNode = new GUI::Node("Linear Gradient", inputTypes, inputStrings, 1, outputTypes, outputStrings, 1, NodeActions::LinearGradient, font));
-							newNode->setPosition(sf::Vector2f(50, 50));
-							break;
-						}
-						case sf::Keyboard::M:
-						{
-							int inputTypes[2];
-							int outputTypes[1];
-							std::string inputStrings[2] = {"A", "B"};
-							std::string outputStrings[1] = {"Result"};
-							inputTypes[0] = inputTypes[1] = GUI::Pin::Image;
-							outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(newNode = new GUI::Node("Multiply", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, NodeActions::Multiply, font));
-							newNode->setPosition(sf::Vector2f(50, 50));
-							break;
-						}
-						case sf::Keyboard::O:
-						{
-							int inputTypes[2];
-							int outputTypes[1];
-							std::string inputStrings[1] = {"Image"};
-							std::string outputStrings[1] = {"Result"};
-							inputTypes[0] = GUI::Pin::Image;
-							outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(newNode = new GUI::Node("Rotate 90", inputTypes, inputStrings, 1, outputTypes, outputStrings, 1, NodeActions::Rotate90, font));
-							newNode->setPosition(sf::Vector2f(50, 50));
-							break;
-						}/*
-						case sf::Keyboard::Z:
-						{
-							int inputTypes[6];
-							int outputTypes[1];
-							std::string inputStrings[6] = {"Integer", "Float", "Vector2i", "Image", "Color"};
-							std::string outputStrings[1] = {"r"};
-							inputTypes[0] = GUI::Pin::Integer;
-							inputTypes[1] = GUI::Pin::Float;
-							inputTypes[2] = GUI::Pin::Vector2i;
-							inputTypes[3] = GUI::Pin::Image;
-							inputTypes[4] = GUI::Pin::Color;
-							outputTypes[0] = GUI::Pin::Image;
-							nodes.push_back(newNode = new GUI::Node("ZZZZZZZZ", inputTypes, inputStrings, 5, outputTypes, outputStrings, 1, nullptr, font));
-							newNode->setPosition(sf::Vector2f(50, 50));
-							break;
-						}*/
-						case sf::Keyboard::Numpad0:
-						{
-							int outputTypes[1];
-							std::string outputStrings[1] = {"Value"};
-							outputTypes[0] = GUI::Pin::Integer;
-							nodes.push_back(newNode = new GUI::InteractiveNode("Integer", nullptr, nullptr, 0, outputTypes, outputStrings, 1, nullptr, font));
-							newNode->setPosition(sf::Vector2f(50, 50));
-							break;
-						}
-						case sf::Keyboard::Numpad1:
-						{
-							int outputTypes[1];
-							std::string outputStrings[1] = {"Value"};
-							outputTypes[0] = GUI::Pin::Float;
-							nodes.push_back(newNode = new GUI::InteractiveNode("Float", nullptr, nullptr, 0, outputTypes, outputStrings, 1, nullptr, font));
-							newNode->setPosition(sf::Vector2f(50, 50));
-							break;
-						}
-						case sf::Keyboard::Numpad2:
-						{
-							int inputTypes[2];
-							int outputTypes[1];
-							std::string inputStrings[2] = {"X", "Y"};
-							std::string outputStrings[1] = {"Vector2i"};
-							inputTypes[0] = inputTypes[1] = GUI::Pin::Integer;
-							outputTypes[0] = GUI::Pin::Vector2i;
-							nodes.push_back(newNode = new GUI::Node("Construct Vector2i", inputTypes, inputStrings, 2, outputTypes, outputStrings, 1, NodeActions::VectoriFromIntegers, font));
-							newNode->setPosition(sf::Vector2f(50, 50));
-							break;
-						}
-						case sf::Keyboard::Numpad3:
-						{
-							int inputTypes[4];
-							int outputTypes[1];
-							std::string inputStrings[4] = {"R", "G", "B", "A"};
-							std::string outputStrings[1] = {"Color"};
-							inputTypes[0] = inputTypes[1] = inputTypes[2] = inputTypes[3] = GUI::Pin::Integer;
-							outputTypes[0] = GUI::Pin::Color;
-							nodes.push_back(newNode = new GUI::Node("Construct Color", inputTypes, inputStrings, 4, outputTypes, outputStrings, 1, NodeActions::ColorFromIntegers, font));
-							newNode->setPosition(sf::Vector2f(50, 50));
-							break;
-						}
-
-						//////////////////////// other than node creation
-						case sf::Keyboard::Delete:
-						{
-							if (selectedNode == nullptr)
-								break;
-
-							// delete all conections and node
-							for (GUI::Pin* p : selectedNode->inputPins)
-							{
-								for (int i = 0; i < connectionLines.size(); i++) // finding a single connection line
-								{
-									if (connectionLines[i]->pins[0] == p || connectionLines[i]->pins[1] == p)
-									{
-										deleteConnectionLine(i);
-										break;
-									}
-								}
-							}
-							for (GUI::Pin* p : selectedNode->outputPins)
-							{
-								for (int i = 0; i < connectionLines.size(); i++) // finding a single connection line
-								{
-									if (connectionLines[i]->pins[0] == p || connectionLines[i]->pins[1] == p)
-									{
-										deleteConnectionLine(i);
-										break;
-									}
-								}
-							}
-
-							delete selectedNode; // free node memory
-
-							int i = 0;
-							for (GUI::Node* n : nodes) // remove from nodes vector
-							{
-								if (n == selectedNode)
-								{
-									nodes.erase(nodes.begin() + i);
-									selectedNode = nullptr;
-									break;
-								}
-								i++;
-							}
-							break;
-						}
-					}
+					EventKeyPressed(event.key.code);
+					break;
 				}
 			}
 		}
@@ -470,6 +155,8 @@ int main()
 			window.draw(newConnection.vertices, 2, sf::Lines);
 
 		outputNode->activate();
+
+		window.draw(rrrrr, &sssss);
 
 		// end the current frame
 
