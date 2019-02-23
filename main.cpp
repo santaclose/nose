@@ -1,5 +1,12 @@
-#define BACKGROUND_COLOR 0x2121ff
+#define BACKGROUND_COLOR 0xa9a9a9ff
+#define TEXT_COLOR 0xf0f0f0ff
 #define INPUT_BUFFER_SIZE 20
+#define SEARCH_BAR_WIDTH 400
+#define SEARCH_BAR_HEIGHT 40
+#define SEARCH_BAR_COLOR 0x323232ff
+#define SEARCH_BAR_BUFFER_SIZE 31
+#define SEARCH_BAR_FONT_SIZE 16
+#define SEARCH_BAR_TEXT_MARGIN 8
 
 #include <fstream>
 #include <iostream>
@@ -17,8 +24,6 @@ struct ConnectionLine
 	sf::Vertex vertices[2];
 };
 
-sf::Font font;
-
 GUI::OutputNode* outputNode = nullptr;
 
 GUI::Node* selectedNode = nullptr;
@@ -30,32 +35,38 @@ sf::Vector2f startDraggingNodePosition;
 bool creatingConnection = false;
 ConnectionLine newConnection;
 
-GUI::InteractiveNode* editingNode = nullptr;
-
 std::vector<GUI::Node*> nodes;
 std::vector<ConnectionLine*> connectionLines;
 
-int editingType = -1;
-float* editingValue;
-
 int currentInputIndex;
 char inputField[INPUT_BUFFER_SIZE];
+
+bool searching = false;
+sf::RectangleShape* searchBar;
+sf::Text searchText;
+char searchBuffer[SEARCH_BAR_BUFFER_SIZE];
+int searchBufferCurrentChar = 0;
 
 #include "userInteraction.h"
 
 void createOutputNode(sf::RenderWindow& window)
 {
-	int inputTypes[1];
-	std::string inputStrings[1] = {"Resulting Image"};
-	inputTypes[0] = GUI::Pin::Image;
-	nodes.push_back(outputNode = new GUI::OutputNode("Output", inputTypes, inputStrings, 1, nullptr, nullptr, 0, nullptr, font, &window));
+	outputNode = new GUI::OutputNode("Output", nullptr, &window);
 	outputNode->setPosition(sf::Vector2f(1000, 380));
 }
 
 inline void init(sf::RenderWindow& window)
 {
-	editingValue = new float(0.0);
-	font.loadFromFile("firacode.ttf");
+	GUI::font.loadFromFile("firacode.ttf");
+
+	searchBar = new sf::RectangleShape(sf::Vector2f(SEARCH_BAR_WIDTH, SEARCH_BAR_HEIGHT));
+	searchBar->setPosition(window.getSize().x / 2 - SEARCH_BAR_WIDTH / 2, 0);
+	searchBar->setFillColor(sf::Color(SEARCH_BAR_COLOR));
+	searchText.setFillColor(sf::Color(TEXT_COLOR));
+	searchText.setFont(GUI::font);
+	searchText.setPosition(window.getSize().x / 2 - SEARCH_BAR_WIDTH / 2 + SEARCH_BAR_TEXT_MARGIN, SEARCH_BAR_TEXT_MARGIN);
+	searchText.setCharacterSize(SEARCH_BAR_FONT_SIZE);
+	searchBuffer[0] = '\0';
 
 	shaders = new sf::Shader[5];
 	shaders[0].loadFromFile("shaders/checker.glsl", sf::Shader::Fragment);
@@ -86,8 +97,10 @@ int main()
 			{
 				case sf::Event::Closed:
 				{
+					delete outputNode;
+					delete searchBar;
 					delete[] shaders;
-					delete editingValue;
+
 					for (GUI::Node* n : nodes)
 						delete n;
 					nodes.clear();
@@ -102,6 +115,8 @@ int main()
 				{
 					sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
 					window.setView(sf::View(visibleArea));
+					searchBar->setPosition(event.size.width / 2 - SEARCH_BAR_WIDTH / 2, 0);
+					searchText.setPosition(event.size.width / 2 - SEARCH_BAR_WIDTH / 2 + SEARCH_BAR_TEXT_MARGIN, SEARCH_BAR_TEXT_MARGIN);
 				}
 				case sf::Event::MouseButtonPressed:
 				{
@@ -147,6 +162,12 @@ int main()
 		window.clear(sf::Color(BACKGROUND_COLOR));
 
 		// draw everything here...
+
+		if (searching)
+		{
+			window.draw(*searchBar);
+			window.draw(searchText);
+		}
 
 		for (GUI::Node* n : nodes)
 		{

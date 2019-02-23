@@ -51,6 +51,7 @@ namespace NodeActions
 		sf::RenderTexture* b = ((sf::RenderTexture*) inputPins[1]->connectedPins[0]->data);
 
 		sf::Vector2u size = a->getSize();
+
 		outputPointer->create(size.x, size.y);
 
 		shaders[2].setParameter("tex0", a->getTexture());
@@ -80,7 +81,8 @@ namespace NodeActions
 		sf::RenderTexture* a = ((sf::RenderTexture*) inputPins[0]->connectedPins[0]->data);
 		sf::Vector2i* newSize = ((sf::Vector2i*) inputPins[1]->connectedPins[0]->data);
 
-		sf::Vector2f originalSize(a->getSize().x, a->getSize().y);
+		sf::Vector2u aSize = a->getSize();
+		sf::Vector2f originalSize(aSize.x, aSize.y);
 		outputPointer->create(newSize->x, newSize->y);
 
 		shaders[4].setParameter("tex", a->getTexture());
