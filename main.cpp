@@ -47,17 +47,22 @@ sf::Text searchText;
 char searchBuffer[SEARCH_BAR_BUFFER_SIZE];
 int searchBufferCurrentChar = 0;
 
+sf::Text someText;
+
 #include "userInteraction.h"
 
 void createOutputNode(sf::RenderWindow& window)
 {
-	outputNode = new GUI::OutputNode("Output", nullptr, &window);
+	nodes.push_back(outputNode = new GUI::OutputNode("Output", nullptr, &window));
 	outputNode->setPosition(sf::Vector2f(1000, 380));
 }
 
 inline void init(sf::RenderWindow& window)
 {
 	GUI::font.loadFromFile("firacode.ttf");
+	someText = sf::Text("TEXTO", GUI::font, 14);
+	someText.setFillColor(sf::Color(0x000000ff));
+	someText.setPosition(20, 20);
 
 	searchBar = new sf::RectangleShape(sf::Vector2f(SEARCH_BAR_WIDTH, SEARCH_BAR_HEIGHT));
 	searchBar->setPosition(window.getSize().x / 2 - SEARCH_BAR_WIDTH / 2, 0);
@@ -97,7 +102,6 @@ int main()
 			{
 				case sf::Event::Closed:
 				{
-					delete outputNode;
 					delete searchBar;
 					delete[] shaders;
 
@@ -160,6 +164,7 @@ int main()
 
 		// clear the window
 		window.clear(sf::Color(BACKGROUND_COLOR));
+		/////////////////////////////////////////////////////
 
 		// draw everything here...
 
@@ -180,10 +185,12 @@ int main()
 		if (creatingConnection)
 			window.draw(newConnection.vertices, 2, sf::Lines);
 
+		window.draw(someText);
+
 		outputNode->activate();
 
+		/////////////////////////////////////////////////////
 		// end the current frame
-
 		window.display();
 	}
 

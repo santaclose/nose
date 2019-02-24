@@ -3,6 +3,7 @@
 #include <fstream>
 #include <SFML/Graphics.hpp>
 #include "node.h"
+#include "nodeFileParser.h"
 
 #define TEXT_COLOR 0xf0f0f0ff
 #define BAR_COLOR 0x161616bb
@@ -247,58 +248,24 @@ void GUI::Pin::draw(sf::RenderWindow& window)
 
 //////////// NODES //////////////////
 
-/*GUI::Node::Node(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font)
+GUI::Node::Node(const std::string& name, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins))
 {
-	std::cout << "construct node" << std::endl;
+	std::cout << "construct node " << name << std::endl;
 
-	this->isInteractive = false;
+	this->action = action;
 	this->isOutputNode = false;
 
-	float contentHeight = PROPERTY_HEIGHT * (outputCount > inputCount ? outputCount : inputCount) + CONTENT_MARGIN_TOP;
+	int maxInputOutputCount; // used for setting content height
+	FileParser::pushPinsFromFile(this, name, maxInputOutputCount); // sets maxInputOutputCount
+
+	float contentHeight = PROPERTY_HEIGHT * maxInputOutputCount + CONTENT_MARGIN_TOP;
 	this->barRect = sf::RectangleShape(sf::Vector2f(NODE_WIDTH, BAR_HEIGHT));
 	this->barRect.setFillColor(sf::Color(BAR_COLOR));
 	this->contentRect = sf::RectangleShape(sf::Vector2f(NODE_WIDTH, contentHeight));
 	this->contentRect.setFillColor(sf::Color(CONTENT_RECT_COLOR));
 
+	this->title = sf::Text(name, GUI::font, NODE_TITLE_FONT_SIZE);
 	this->title.setFillColor(sf::Color(TEXT_COLOR));
-	this->title.setFont(font);
-	this->title.setCharacterSize(14);
-	this->title.setString(name);
-
-	this->action = action;
-
-	for (int i = 0; i < inputCount; i++)
-	{
-		this->inputPins.push_back(new Pin(inputNames[i], inputTypes[i], true, font, this));
-	}
-	for (int i = 0; i < outputCount; i++)
-	{
-		this->outputPins.push_back(new Pin(outputNames[i], outputTypes[i], false, font, this));
-	}
-}*/
-
-GUI::Node::Node(const std::string& name, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins))
-{
-	std::cout << "construct node" << std::endl;
-	this->action = action;
-	this->isOutputNode = false;
-
-	std::ifstream datFile("nodes.dat");
-
-	std::string line;
-	while (std::getline(datFile, line))
-	{
-		std::cout << line << std::endl;
-	}
-	//this->inputPins.push_back(new Pin("inputNames[i]", Pin::Image, true, this));
-
-
-
-	/*float contentHeight = PROPERTY_HEIGHT * (outputCount > inputCount ? outputCount : inputCount) + CONTENT_MARGIN_TOP;
-	this->barRect = sf::RectangleShape(sf::Vector2f(NODE_WIDTH, BAR_HEIGHT));
-	this->barRect.setFillColor(sf::Color(BAR_COLOR));
-	this->contentRect = sf::RectangleShape(sf::Vector2f(NODE_WIDTH, contentHeight));
-	this->contentRect.setFillColor(sf::Color(CONTENT_RECT_COLOR));*/
 }
 
 GUI::Node::~Node()
@@ -387,26 +354,12 @@ void GUI::Node::setPosition(const sf::Vector2f& newPosition)
 	for (auto p : inputPins)
 	{
 		p->setPosition(newPosition, i);
-		/*p->rect.setPosition(newPosition + sf::Vector2f(PIN_RECT_MARGIN, BAR_HEIGHT + PIN_RECT_MARGIN + PROPERTY_HEIGHT * i + CONTENT_MARGIN_TOP));
-		p->text.setPosition(p->rect.getPosition() + sf::Vector2f(PIN_TEXT_MARGIN_X, PIN_TEXT_MARGIN_Y));
-
-		for (auto pointer : p->connectionVertices)
-		{
-			pointer->position += displacement;
-		}*/
 		i++;
 	}
 	i = 0;
 	for (auto p : outputPins)
 	{
 		p->setPosition(newPosition, i);
-		/*p->rect.setPosition(newPosition + sf::Vector2f(NODE_WIDTH - PIN_RECT_MARGIN - PIN_RECT_SIZE, BAR_HEIGHT + PIN_RECT_MARGIN + PROPERTY_HEIGHT * i + CONTENT_MARGIN_TOP));
-		p->text.setPosition(p->rect.getPosition() + sf::Vector2f(-PIN_TEXT_MARGIN_X -p->stringOutputOffsetX, PIN_TEXT_MARGIN_Y));
-
-		for (auto pointer : p->connectionVertices)
-		{
-			pointer->position += displacement;
-		}*/
 		i++;
 	}
 }
@@ -491,100 +444,18 @@ void GUI::Node::draw(sf::RenderWindow& window)
 	window.draw(this->barRect);
 	window.draw(this->contentRect);
 	window.draw(this->title);
-	for (auto p : this->inputPins)
+
+	for (Pin* p : this->inputPins)
 	{
 		p->draw(window);
 	}
-	for (auto p : this->outputPins)
+	for (Pin* p : this->outputPins)
 	{
 		p->draw(window);
 	}
 }
 
-/////////// interactive nodes
-
-/*GUI::InteractiveNode::InteractiveNode(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font) : GUI::Node(name, inputTypes, inputNames, inputCount, outputTypes, outputNames, outputCount, action, font)
-{
-	std::cout << "construct interactive node" << std::endl;
-
-	this->isInteractive = true;
-
-	// setting the size again :(
-	this->contentRect.setSize(sf::Vector2f(NODE_WIDTH, PROPERTY_HEIGHT + CONTENT_MARGIN_TOP + INTERACTIVE_COMPONENT_HEIGHT));
-
-	this->interactionComponentRect = sf::RectangleShape(sf::Vector2f(NODE_WIDTH * 0.9, INTERACTIVE_COMPONENT_HEIGHT * 0.6));
-	this->interactionComponentRect.setFillColor(sf::Color(INTERACTIVE_COMPONENT_COLOR));
-
-	this->interactionComponentText.setFillColor(sf::Color(TEXT_COLOR));
-	this->interactionComponentText.setFont(font);
-	this->interactionComponentText.setCharacterSize(INTERACTIVE_COMPONENT_TEXT_FONT_SIZE);
-
-	if (outputTypes[0] == GUI::Pin::Float)
-		this->interactionComponentText.setString("0.5");
-
-	else if (outputTypes[0] == GUI::Pin::Integer)
-		this->interactionComponentText.setString("1");
-
-	this->outputPins[0]->dataAvailable = true; // all interactive nodes have data ready when instantiated
-}*/
-/*
-void GUI::InteractiveNode::activate() // propagates activation
-{
-	std::cout << "Not computing " << this->title.getString().toAnsiString() << std::endl;
-	std::vector<GUI::Node*> computedNodes;
-	for (Pin* p : this->outputPins[0]->connectedPins) // should be only one output pin
-	{
-		if (std::find(computedNodes.begin(), computedNodes.end(), p->parentNode) == computedNodes.end()) // if not already computed
-		{
-			p->parentNode->activate();
-			computedNodes.push_back(p->parentNode);
-		}
-	}
-	computedNodes.clear();
-}
-
-void GUI::InteractiveNode::setPosition(const sf::Vector2f& newPosition)
-{
-	Node::setPosition(newPosition);
-
-	this->interactionComponentRect.setPosition(newPosition + sf::Vector2f(NODE_WIDTH * 0.05, BAR_HEIGHT + PROPERTY_HEIGHT + CONTENT_MARGIN_TOP + 0.15 * INTERACTIVE_COMPONENT_HEIGHT));
-	this->interactionComponentText.setPosition(interactionComponentRect.getPosition() + sf::Vector2f((NODE_WIDTH - NODE_WIDTH * 0.2)/2.0 - 10, INTERACTIVE_COMPONENT_HEIGHT*0.1));
-}
-
-bool GUI::InteractiveNode::isMouseOverInteractionComponent(sf::Vector2f& mousePos)
-{
-	return isPointOverRect(mousePos, interactionComponentRect);
-}
-
-void GUI::InteractiveNode::setValue(float value)
-{
-	if (outputPins[0]->type == Pin::Integer)
-	{
-		*((int*)outputPins[0]->data) = (int) value;
-		interactionComponentText.setString(std::to_string((int) value));
-	}
-	else
-	{
-		*((float*)outputPins[0]->data) = value;
-		interactionComponentText.setString(std::to_string(value));
-	}
-}
-
-void GUI::InteractiveNode::draw(sf::RenderWindow& window)
-{
-	Node::draw(window);
-	window.draw(this->interactionComponentRect);
-	window.draw(this->interactionComponentText);
-}
-*/
 /////////// output node
-
-/*GUI::OutputNode::OutputNode(const std::string& name, const int* inputTypes, const std::string* inputNames, const int inputCount, const int* outputTypes, const std::string* outputNames, const int outputCount, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), const sf::Font& font, sf::RenderWindow* window) : GUI::Node(name, inputTypes, inputNames, inputCount, outputTypes, outputNames, outputCount, action, font)
-{
-	std::cout << "construct output node" << std::endl;
-	this->isOutputNode = true;
-	this->window = window;
-}*/
 
 GUI::OutputNode::OutputNode(const std::string& name, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), sf::RenderWindow* window) : GUI::Node(name, action)
 {

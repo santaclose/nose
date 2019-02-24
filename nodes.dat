@@ -41,6 +41,11 @@ Multiply
 	out:
 		Image: Result
 ]
+Output
+[
+	in:
+		Image: Image
+]
 Repeat
 [
 	in:
