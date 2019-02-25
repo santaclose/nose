@@ -47,8 +47,6 @@ sf::Text searchText;
 char searchBuffer[SEARCH_BAR_BUFFER_SIZE];
 int searchBufferCurrentChar = 0;
 
-sf::Text someText;
-
 #include "userInteraction.h"
 
 void createOutputNode(sf::RenderWindow& window)
@@ -59,16 +57,14 @@ void createOutputNode(sf::RenderWindow& window)
 
 inline void init(sf::RenderWindow& window)
 {
-	GUI::font.loadFromFile("firacode.ttf");
-	someText = sf::Text("TEXTO", GUI::font, 14);
-	someText.setFillColor(sf::Color(0x000000ff));
-	someText.setPosition(20, 20);
+	GUI::initializeFont();
+	editingFloat = new float();
 
 	searchBar = new sf::RectangleShape(sf::Vector2f(SEARCH_BAR_WIDTH, SEARCH_BAR_HEIGHT));
 	searchBar->setPosition(window.getSize().x / 2 - SEARCH_BAR_WIDTH / 2, 0);
 	searchBar->setFillColor(sf::Color(SEARCH_BAR_COLOR));
 	searchText.setFillColor(sf::Color(TEXT_COLOR));
-	searchText.setFont(GUI::font);
+	searchText.setFont(GUI::gFont);
 	searchText.setPosition(window.getSize().x / 2 - SEARCH_BAR_WIDTH / 2 + SEARCH_BAR_TEXT_MARGIN, SEARCH_BAR_TEXT_MARGIN);
 	searchText.setCharacterSize(SEARCH_BAR_FONT_SIZE);
 	searchBuffer[0] = '\0';
@@ -102,6 +98,7 @@ int main()
 			{
 				case sf::Event::Closed:
 				{
+					delete editingFloat;
 					delete searchBar;
 					delete[] shaders;
 
@@ -184,8 +181,6 @@ int main()
 
 		if (creatingConnection)
 			window.draw(newConnection.vertices, 2, sf::Lines);
-
-		window.draw(someText);
 
 		outputNode->activate();
 

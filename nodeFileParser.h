@@ -8,7 +8,7 @@ namespace FileParser
 {
 	void parsePinLine(const std::string& line, std::string& a, std::string& b);
 	int typeFromString(const std::string& s);
-	void pushPinsFromFile(GUI::Node* node, const std::string& nodeName, int& maxInputOutputCount);
+	void pushPinsFromFile(GUI::Node* node, const std::string& nodeName, int& pinCountSum);
 }
 
 void FileParser::parsePinLine(const std::string& line, std::string& a, std::string& b)
@@ -34,7 +34,7 @@ int FileParser::typeFromString(const std::string& s)
 		return GUI::Pin::Color;
 }
 
-void FileParser::pushPinsFromFile(GUI::Node* node, const std::string& nodeName, int& maxInputOutputCount)
+void FileParser::pushPinsFromFile(GUI::Node* node, const std::string& nodeName, int& pinCountSum)
 {
 	using namespace std;
 
@@ -77,6 +77,7 @@ void FileParser::pushPinsFromFile(GUI::Node* node, const std::string& nodeName, 
 
 			if (line.find("in:") != string::npos) // found
 			{
+				out = false;
 				in = true;
 				//cout << "input\n";
 			}
@@ -93,7 +94,7 @@ void FileParser::pushPinsFromFile(GUI::Node* node, const std::string& nodeName, 
 
 	}
 
-	maxInputOutputCount = inputCount > outputCount ? inputCount : outputCount;
+	pinCountSum = outputCount + inputCount ;
 
 	//cout << "iph: " << inputCount << endl;
 	//cout << "oph: " << outputCount << endl;

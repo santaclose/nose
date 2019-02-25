@@ -1,31 +1,39 @@
 namespace NodeActions
 {
+	const void Integer(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
+	{
+		*((int*) outputPins[0]->data) = *((int*) inputPins[0]->getData());
+	}
+	const void Float(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
+	{
+		*((float*) outputPins[0]->data) = *((float*) inputPins[0]->getData());
+	}
 	const void VectoriFromIntegers(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
 	{
-		sf::Vector2i* outputPointer = ((sf::Vector2i*)outputPins[0]->data);
-		outputPointer->x = *((int*) inputPins[0]->connectedPins[0]->data);
-		outputPointer->y = *((int*) inputPins[1]->connectedPins[0]->data);
+		sf::Vector2i* outputPointer = ((sf::Vector2i*) outputPins[0]->data);
+		outputPointer->x = *((int*) inputPins[0]->getData());
+		outputPointer->y = *((int*) inputPins[1]->getData());
 	}
 
 	const void ColorFromIntegers(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
 	{
 		sf::Color* outputPointer = ((sf::Color*)outputPins[0]->data);
-		outputPointer->r = *((int*) inputPins[0]->connectedPins[0]->data);
-		outputPointer->g = *((int*) inputPins[1]->connectedPins[0]->data);
-		outputPointer->b = *((int*) inputPins[2]->connectedPins[0]->data);
-		outputPointer->a = *((int*) inputPins[3]->connectedPins[0]->data);
+		outputPointer->r = *((int*) inputPins[0]->getData());
+		outputPointer->g = *((int*) inputPins[1]->getData());
+		outputPointer->b = *((int*) inputPins[2]->getData());
+		outputPointer->a = *((int*) inputPins[3]->getData());
 	}
 
 	const void Checker(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
 	{
 		sf::RenderTexture* outputPointer = ((sf::RenderTexture*) outputPins[0]->data);
-		sf::Vector2i* imageSize = ((sf::Vector2i*) inputPins[0]->connectedPins[0]->data);
+		sf::Vector2i* imageSize = ((sf::Vector2i*) inputPins[0]->getData());
 
 		outputPointer->create(imageSize->x, imageSize->y);
 
-		shaders[0].setParameter("colorA", *((sf::Color*) inputPins[2]->connectedPins[0]->data));
-		shaders[0].setParameter("colorB", *((sf::Color*) inputPins[3]->connectedPins[0]->data));
-		shaders[0].setParameter("squareSize", *((int*) inputPins[1]->connectedPins[0]->data));
+		shaders[0].setParameter("colorA", *((sf::Color*) inputPins[2]->getData()));
+		shaders[0].setParameter("colorB", *((sf::Color*) inputPins[3]->getData()));
+		shaders[0].setParameter("squareSize", *((int*) inputPins[1]->getData()));
 
 		sf::Sprite spr(outputPointer->getTexture());
 		outputPointer->draw(spr, &shaders[0]);
@@ -34,7 +42,7 @@ namespace NodeActions
 	const void LinearGradient(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
 	{
 		sf::RenderTexture* outputPointer = ((sf::RenderTexture*) outputPins[0]->data);
-		sf::Vector2i* imageSize = ((sf::Vector2i*) inputPins[0]->connectedPins[0]->data);
+		sf::Vector2i* imageSize = ((sf::Vector2i*) inputPins[0]->getData());
 
 		outputPointer->create(imageSize->x, imageSize->y);
 
@@ -47,8 +55,8 @@ namespace NodeActions
 	const void Multiply(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
 	{
 		sf::RenderTexture* outputPointer = ((sf::RenderTexture*) outputPins[0]->data);
-		sf::RenderTexture* a = ((sf::RenderTexture*) inputPins[0]->connectedPins[0]->data);
-		sf::RenderTexture* b = ((sf::RenderTexture*) inputPins[1]->connectedPins[0]->data);
+		sf::RenderTexture* a = ((sf::RenderTexture*) inputPins[0]->getData());
+		sf::RenderTexture* b = ((sf::RenderTexture*) inputPins[1]->getData());
 
 		sf::Vector2u size = a->getSize();
 
@@ -64,7 +72,7 @@ namespace NodeActions
 	const void Rotate90(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
 	{
 		sf::RenderTexture* outputPointer = ((sf::RenderTexture*) outputPins[0]->data);
-		sf::RenderTexture* a = ((sf::RenderTexture*) inputPins[0]->connectedPins[0]->data);
+		sf::RenderTexture* a = ((sf::RenderTexture*) inputPins[0]->getData());
 
 		sf::Vector2u size = a->getSize();
 		outputPointer->create(size.y, size.x);
@@ -78,8 +86,8 @@ namespace NodeActions
 	const void Repeat(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
 	{
 		sf::RenderTexture* outputPointer = ((sf::RenderTexture*) outputPins[0]->data);
-		sf::RenderTexture* a = ((sf::RenderTexture*) inputPins[0]->connectedPins[0]->data);
-		sf::Vector2i* newSize = ((sf::Vector2i*) inputPins[1]->connectedPins[0]->data);
+		sf::RenderTexture* a = ((sf::RenderTexture*) inputPins[0]->getData());
+		sf::Vector2i* newSize = ((sf::Vector2i*) inputPins[1]->getData());
 
 		sf::Vector2u aSize = a->getSize();
 		sf::Vector2f originalSize(aSize.x, aSize.y);

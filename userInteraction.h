@@ -1,6 +1,9 @@
 #pragma once
 
-float editingFloat;
+#define INTEGER_SET_MULTIPLIER 0.1
+#define FLOAT_SET_MULTIPLIER 0.031
+
+float* editingFloat;
 GUI::Pin* editingPin = nullptr;
 
 void deleteConnectionLine(int& i)
@@ -23,7 +26,7 @@ inline void EventMouseLeftDown(sf::Vector2f& mousePos)
 			draggingNode = n;
 			startDraggingMousePosition = mousePos;
 			startDraggingNodePosition = n->getPosition();
-			continue;
+			break; // cannot click two nodes at the same time
 		}
 		
 		if (n->isMouseOverContent(mousePos))
@@ -31,7 +34,7 @@ inline void EventMouseLeftDown(sf::Vector2f& mousePos)
 			GUI::Pin* p;
 			if (n->isMouseOverPin(mousePos, p))
 			{
-				if (!p->isDisconnected() && p->isInput)
+				if (!p->isDisconnected() && p->isInput) // disconnect
 				{
 					for (int i = 0; i < connectionLines.size(); i++) // finding a single connection line
 					{
@@ -42,22 +45,24 @@ inline void EventMouseLeftDown(sf::Vector2f& mousePos)
 						}
 					}
 				}
-				if (!p->isInput || p->isInput && p->isDisconnected())
+				if (!p->isInput || p->isInput && p->isDisconnected()) // can connect
 				{
 					newConnection.pins[0] = p;
 					newConnection.vertices[0].position = p->getRectCenter();
 					creatingConnection = true;
 				}
+				break; // cannot click two nodes at the same time
 			}
 			else if (n->isMouseOverInteractionComponent(mousePos, p))
 			{
 				std::cout << "editing" << std::endl;
 				if (p->type == GUI::Pin::Integer)
-					editingFloat = (float)*((int*)n->outputPins[0]->data);
+					*editingFloat = (float) (*((int*) p->data));
 				else
-					editingFloat = *((float*)n->outputPins[0]->data);
+					*editingFloat = *((float*) p->data);
 				startDraggingMousePosition = mousePos;
 				editingPin = p;
+				break; // cannot click two nodes at the same time
 			}
 		}
 	}
@@ -83,7 +88,7 @@ inline void EventMouseLeftUp(sf::Vector2f& mousePos)
 						a->pins[1] = p;
 
 						a->pins[0]->establishConnection(&a->vertices[0], a->pins[1], false);
-						a->pins[1]->establishConnection(&a->vertices[1], a->pins[0], true);
+						a->pins[1]->establishConnection(&a->vertices[1], a->pins[0], true); // last boolean tells if it is the second call
 
 						// LOG
 						/*std::cout << "CONNECTED PINS TO " << a->pins[0]->parentNode->title.getString().toAnsiString() << std::endl;
@@ -96,6 +101,7 @@ inline void EventMouseLeftUp(sf::Vector2f& mousePos)
 						connectionLines.push_back(a);
 					}
 				}
+				break;
 			}
 		}
 	}
@@ -149,15 +155,18 @@ inline void EventMouseMoved(sf::Event::MouseMoveEvent& newPosition)
 		int disp = newPosition.x - startDraggingMousePosition.x;
 		if (editingPin->type == GUI::Pin::Float)
 		{
-			editingFloat += disp * 0.031;
+			*editingFloat += disp * FLOAT_SET_MULTIPLIER;
 		}
 		else if (editingPin->type == GUI::Pin::Integer)
 		{
-			editingFloat += disp * 0.1;
+			*editingFloat += disp * INTEGER_SET_MULTIPLIER;
 		}
-		
-		editingPin->setValue(&editingFloat);
-		editingPin->parentNode->activate();
+
+		if (editingPin->type == GUI::Pin::Float || editingPin->type == GUI::Pin::Integer)
+		{
+			editingPin->setValue(editingFloat);
+		}
+		//editingPin->parentNode->activate();
 
 		/*if (newPosition.x < 0.0)
 		{
@@ -232,6 +241,20 @@ inline void EventKeyPressed(sf::Keyboard::Key keyCode)
 			if (searching)
 				break;
 			nodes.push_back(newNode = new GUI::Node("Rotate 90", NodeActions::Rotate90));
+			break;
+		}
+		case sf::Keyboard::Numpad0:
+		{
+			if (searching)
+				break;
+			nodes.push_back(newNode = new GUI::Node("Integer", NodeActions::Integer));
+			break;
+		}
+		case sf::Keyboard::Numpad1:
+		{
+			if (searching)
+				break;
+			nodes.push_back(newNode = new GUI::Node("Float", NodeActions::Float));
 			break;
 		}
 		case sf::Keyboard::Numpad2:

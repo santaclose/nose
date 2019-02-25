@@ -10,17 +10,17 @@
 #define SELECTED_BAR_COLOR 0x6b6b6bbb
 #define CONTENT_RECT_COLOR 0x323232bb
 #define INTERACTIVE_COMPONENT_COLOR 0x424242bb
-#define INTERACTIVE_COMPONENT_SIZE 10
+#define INTERACTIVE_COMPONENT_WIDTH 56
+#define INTERACTIVE_COMPONENT_HEIGHT 16
 
 #define NODE_TITLE_FONT_SIZE 14
 #define PIN_TEXT_FONT_SIZE 11
 #define INTERACTIVE_COMPONENT_TEXT_FONT_SIZE 12
 
 #define BAR_HEIGHT 25
-#define PROPERTY_HEIGHT 25
+#define PROPERTY_HEIGHT 26
 #define NODE_WIDTH 180
 #define CONTENT_MARGIN_TOP 10
-#define INTERACTIVE_COMPONENT_HEIGHT 34
 
 #define TEXT_MARGIN_TOP 4
 #define TEXT_MARGIN_LEFT 10
@@ -34,6 +34,10 @@
 
 
 /////////// generic
+void GUI::initializeFont()
+{
+	gFont.loadFromFile("firacode.ttf");
+}
 
 bool GUI::isPointOverRect(const sf::Vector2f& vector, const sf::RectangleShape& rect)
 {
@@ -55,22 +59,22 @@ void GUI::Pin::assignColor(const int inputType, sf::RectangleShape& rect)
 {
 	switch (inputType)
 	{
-		case GUI::Pin::Integer:
+		case Pin::Integer:
 			rect.setFillColor(sf::Color(0x4ca4fbff));
 			break;
-		case GUI::Pin::Float:
+		case Pin::Float:
 			rect.setFillColor(sf::Color(0xee1133ff));
 			break;
-		case GUI::Pin::Vector2i:
+		case Pin::Vector2i:
 			rect.setFillColor(sf::Color(0x56957aff));
 			break;
-		/*case GUI::Pin::Recti:
+		/*case Pin::Recti:
 			rect.setFillColor(sf::Color(0x324afbff));
 			break;*/
-		case GUI::Pin::Image:
+		case Pin::Image:
 			rect.setFillColor(sf::Color(0x00bc44ff));
 			break;
-		case GUI::Pin::Color:
+		case Pin::Color:
 			rect.setFillColor(sf::Color(0xaa7700ff));
 			break;
 
@@ -89,30 +93,36 @@ GUI::Pin::Pin(const std::string& name, const int type, const bool isInput, Node*
 
 	this->rect = sf::RectangleShape(sf::Vector2f(PIN_RECT_SIZE, PIN_RECT_SIZE));
 	assignColor(type, this->rect);
-	this->interactiveRect = sf::RectangleShape(sf::Vector2f(INTERACTIVE_COMPONENT_SIZE, INTERACTIVE_COMPONENT_SIZE));
+	this->interactiveRect = sf::RectangleShape(sf::Vector2f(INTERACTIVE_COMPONENT_WIDTH, INTERACTIVE_COMPONENT_HEIGHT));
 	this->interactiveRect.setFillColor(sf::Color(INTERACTIVE_COMPONENT_COLOR));
 
+	//sf::Font theFont;
+	//theFont.loadFromFile("firacode.ttf");
+
+	this->text = sf::Text(name, gFont, PIN_TEXT_FONT_SIZE);
 	this->text.setFillColor(sf::Color(TEXT_COLOR));
-	this->text.setFont(GUI::font);
-	this->text.setCharacterSize(PIN_TEXT_FONT_SIZE);
-	this->text.setString(name);
 
 	switch(this->type)
 	{
 		case GUI::Pin::Integer:
 			this->data = new int(1);
+			this->interactiveText = sf::Text("1", gFont, 11);
 			break;
 		case GUI::Pin::Float:
 			this->data = new float(0.5);
+			this->interactiveText = sf::Text("0.5", gFont, 11);
 			break;
 		case GUI::Pin::Vector2i:
 			this->data = new sf::Vector2i(0, 0);
+			this->interactiveText = sf::Text("0, 0", gFont, 11);
 			break;
 		case GUI::Pin::Image:
 			this->data = new sf::RenderTexture();
+			this->interactiveText = sf::Text("None", gFont, 11);
 			break;
 		case GUI::Pin::Color:
 			this->data = new sf::Color(255, 0, 255, 255);
+			this->interactiveRect.setFillColor(*((sf::Color*) this->data));
 			break;
 	}
 }
@@ -142,9 +152,20 @@ void GUI::Pin::setPosition(const sf::Vector2f& newPosition, const int i)
 {
 	if (this->isInput)
 	{
-		this->rect.setPosition(newPosition + sf::Vector2f(PIN_RECT_MARGIN, BAR_HEIGHT + PIN_RECT_MARGIN + PROPERTY_HEIGHT * i + CONTENT_MARGIN_TOP));
-		this->text.setPosition(this->rect.getPosition() + sf::Vector2f(PIN_TEXT_MARGIN_X, PIN_TEXT_MARGIN_Y));
-		this->interactiveRect.setPosition(this->text.getPosition() + sf::Vector2f(20, 0));
+		this->rect.setPosition(newPosition + sf::Vector2f(PIN_RECT_MARGIN, BAR_HEIGHT + PIN_RECT_MARGIN + PROPERTY_HEIGHT * (i + this->parentNode->outputPins.size()) + CONTENT_MARGIN_TOP));
+
+		if (this->isDisconnected() && !this->parentNode->isOutputNode)
+		{
+			this->interactiveRect.setPosition(this->rect.getPosition() + sf::Vector2f(16, -7));
+			this->text.setPosition(this->interactiveRect.getPosition() + sf::Vector2f(INTERACTIVE_COMPONENT_WIDTH + PIN_TEXT_MARGIN_X, 0));
+			//this->text.setPosition(this->rect.getPosition() + sf::Vector2f(PIN_TEXT_MARGIN_X, PIN_TEXT_MARGIN_Y));
+			//this->interactiveRect.setPosition(sf::Vector2f(newPosition.x + NODE_WIDTH - INTERACTIVE_COMPONENT_WIDTH - PIN_RECT_MARGIN, this->text.getPosition().y));
+		}
+		else
+		{
+			this->text.setPosition(this->rect.getPosition() + sf::Vector2f(PIN_TEXT_MARGIN_X, PIN_TEXT_MARGIN_Y));
+		}
+		this->interactiveText.setPosition(this->interactiveRect.getPosition() + sf::Vector2f(2, 2));
 	}
 	else
 	{
@@ -154,17 +175,27 @@ void GUI::Pin::setPosition(const sf::Vector2f& newPosition, const int i)
 
 	for (auto pointer : this->connectionVertices)
 	{
-		//pointer->position += displacement;
 		pointer->position = this->rect.getPosition() + sf::Vector2f(PIN_RECT_SIZE/2, PIN_RECT_SIZE/2);
 	}
 }
 
 bool GUI::Pin::hasDataAvailable()
 {
+	if (this->type == Pin::Integer || this->type == Pin::Float || this->type == Pin::Vector2i || this->type == Pin::Color)
+		return true;
 	if (this->connectedPins.size() == 0) // pin not connected
 		return false;
 	if (!this->connectedPins[0]->dataAvailable) // connected pin has no data
 		return false;
+	return true;
+}
+
+void* GUI::Pin::getData()
+{
+	if (this->isDisconnected())
+		return this->data;
+	else
+		return this->connectedPins[0]->data;
 }
 
 bool GUI::Pin::isMouseOver(sf::Vector2f& mousePos)
@@ -190,18 +221,20 @@ bool GUI::Pin::isDisconnected()
 	return connectionVertices.empty();
 }
 
-void GUI::Pin::setValue(const void* data)
+void GUI::Pin::setValue(const void* data) // copies the data into its data field
 {
 	if (this->type == Pin::Float)
-		*((float*) this->data) = *((float*) data);
+		this->interactiveText.setString(std::to_string(*((float*) this->data) = *((float*) data)));
 	else if (this->type == Pin::Integer)
-		*((int*) this->data) = *((int*) data);
+		this->interactiveText.setString(std::to_string(*((int*) this->data) = (int) *((float*) data)));
 	else if (this->type == Pin::Vector2i)
 		*((sf::Vector2i*) this->data) = *((sf::Vector2i*) data);
 	else if (this->type == Pin::Color)
 		*((sf::Color*) this->data) = *((sf::Color*) data);
 	else
 		std::cout << "cannot set value for type " << this->type << std::endl;
+
+	this->parentNode->activate();
 }
 
 void GUI::Pin::establishConnection(sf::Vertex* newConnectionVertex, GUI::Pin* otherPin, bool isSecondConnection)
@@ -209,10 +242,13 @@ void GUI::Pin::establishConnection(sf::Vertex* newConnectionVertex, GUI::Pin* ot
 	this->connectionVertices.push_back(newConnectionVertex);
 	this->connectedPins.push_back(otherPin);
 
+	// refresh position to display properly
+	this->parentNode->setPosition(this->parentNode->getPosition());
+
 	if (!isSecondConnection) // first connection, cannot activate yet
 		return;
 
-	// activate the left side node
+	// activate the left side node (the one that has the output pin)
 	if (!this->isInput)
 		this->parentNode->activate();
 	else
@@ -233,6 +269,10 @@ void GUI::Pin::disconnectFrom(GUI::Pin*& p)
 		{
 			this->connectedPins.erase(this->connectedPins.begin() + i);
 			this->connectionVertices.erase(this->connectionVertices.begin() + i);
+
+			// refresh position to display properly
+			this->parentNode->setPosition(this->parentNode->getPosition());
+
 			break;
 		}
 	}
@@ -242,8 +282,13 @@ void GUI::Pin::draw(sf::RenderWindow& window)
 {
 	window.draw(this->rect);
 	window.draw(this->text);
+	if (this->parentNode->isOutputNode)
+		return;
 	if (this->isInput && this->isDisconnected())
+	{
 		window.draw(this->interactiveRect);
+		window.draw(this->interactiveText);
+	}
 }
 
 //////////// NODES //////////////////
@@ -255,16 +300,19 @@ GUI::Node::Node(const std::string& name, const void (*action)(const std::vector<
 	this->action = action;
 	this->isOutputNode = false;
 
-	int maxInputOutputCount; // used for setting content height
-	FileParser::pushPinsFromFile(this, name, maxInputOutputCount); // sets maxInputOutputCount
+	//sf::Font theFont;
+	//theFont.loadFromFile("firacode.ttf");
 
-	float contentHeight = PROPERTY_HEIGHT * maxInputOutputCount + CONTENT_MARGIN_TOP;
+	int pinCountSum; // used for setting content height
+	FileParser::pushPinsFromFile(this, name, pinCountSum); // sets pinCountSum and pushes pins
+
+	float contentHeight = PROPERTY_HEIGHT * pinCountSum + CONTENT_MARGIN_TOP;
 	this->barRect = sf::RectangleShape(sf::Vector2f(NODE_WIDTH, BAR_HEIGHT));
 	this->barRect.setFillColor(sf::Color(BAR_COLOR));
 	this->contentRect = sf::RectangleShape(sf::Vector2f(NODE_WIDTH, contentHeight));
 	this->contentRect.setFillColor(sf::Color(CONTENT_RECT_COLOR));
 
-	this->title = sf::Text(name, GUI::font, NODE_TITLE_FONT_SIZE);
+	this->title = sf::Text(name, gFont, NODE_TITLE_FONT_SIZE);
 	this->title.setFillColor(sf::Color(TEXT_COLOR));
 }
 

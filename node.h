@@ -2,7 +2,8 @@
 
 namespace GUI
 {
-	static sf::Font font;
+	static sf::Font gFont;
+	void initializeFont();
 	bool isPointOverRect(const sf::Vector2f& vector, const sf::RectangleShape& rect);
 	bool isPointOverRect(const sf::Vector2f& vector, const sf::Vector2f& rectPosition, const sf::Vector2f& rectSize);
 
@@ -15,6 +16,7 @@ namespace GUI
 		int stringOutputOffsetX;	//  only for setting output pins text position
 		sf::RectangleShape rect;
 		sf::RectangleShape interactiveRect;
+		sf::Text interactiveText;
 		sf::Text text;
 	public:
 		int type;
@@ -40,6 +42,7 @@ namespace GUI
 		~Pin();
 		void setPosition(const sf::Vector2f& newPosition, const int i); // receives node's top left corner as new position, i contains the pin index
 		bool hasDataAvailable(); // only for input pins. checks if connected pin has data available
+		void* getData();
 		bool isMouseOver(sf::Vector2f& mousePos);
 		bool isMouseOverInteractionComponent(sf::Vector2f& mousePos);
 		bool isDisconnected();
