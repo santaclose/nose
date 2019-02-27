@@ -244,6 +244,7 @@ inline void EventKeyPressed(sf::Keyboard::Key keyCode)
 			break;
 		}
 		case sf::Keyboard::Numpad0:
+		case sf::Keyboard::Num0:
 		{
 			if (searching)
 				break;
@@ -251,6 +252,7 @@ inline void EventKeyPressed(sf::Keyboard::Key keyCode)
 			break;
 		}
 		case sf::Keyboard::Numpad1:
+		case sf::Keyboard::Num1:
 		{
 			if (searching)
 				break;
@@ -258,6 +260,7 @@ inline void EventKeyPressed(sf::Keyboard::Key keyCode)
 			break;
 		}
 		case sf::Keyboard::Numpad2:
+		case sf::Keyboard::Num2:
 		{
 			if (searching)
 				break;
@@ -265,6 +268,7 @@ inline void EventKeyPressed(sf::Keyboard::Key keyCode)
 			break;
 		}
 		case sf::Keyboard::Numpad3:
+		case sf::Keyboard::Num3:
 		{
 			if (searching)
 				break;
@@ -273,7 +277,9 @@ inline void EventKeyPressed(sf::Keyboard::Key keyCode)
 		}
 
 		//////////////////////// other than node creation
+		case sf::Keyboard::X:
 		case sf::Keyboard::Delete:
+		case sf::Keyboard::Backspace:
 		{
 			if (selectedNode == nullptr)
 				break;

@@ -4,8 +4,10 @@ namespace GUI
 {
 	static sf::Font gFont;
 	void initializeFont();
+	void initializeSearchBar(sf::RectangleShape*& searchBar, sf::Text& searchText, char* searchBuffer, sf::RenderWindow& window);
 	bool isPointOverRect(const sf::Vector2f& vector, const sf::RectangleShape& rect);
 	bool isPointOverRect(const sf::Vector2f& vector, const sf::Vector2f& rectPosition, const sf::Vector2f& rectSize);
+	void createSearchBar();
 
 	class Node;
 

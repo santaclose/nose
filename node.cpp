@@ -32,11 +32,29 @@
 #define PIN_TEXT_MARGIN_Y -5
 #define CHARACTER_WIDTH 7
 
+#define SEARCH_BAR_WIDTH 400
+#define SEARCH_BAR_HEIGHT 40
+#define SEARCH_BAR_COLOR 0x323232ff
+#define SEARCH_BAR_FONT_SIZE 16
+#define SEARCH_BAR_TEXT_MARGIN 8
+
 
 /////////// generic
 void GUI::initializeFont()
 {
 	gFont.loadFromFile("firacode.ttf");
+}
+
+void GUI::initializeSearchBar(sf::RectangleShape*& searchBar, sf::Text& searchText, char* searchBuffer, sf::RenderWindow& window)
+{
+	searchBar = new sf::RectangleShape(sf::Vector2f(SEARCH_BAR_WIDTH, SEARCH_BAR_HEIGHT));
+	searchBar->setPosition(window.getSize().x / 2 - SEARCH_BAR_WIDTH / 2, 0);
+	searchBar->setFillColor(sf::Color(SEARCH_BAR_COLOR));
+	searchText.setFillColor(sf::Color(TEXT_COLOR));
+	searchText.setFont(gFont);
+	searchText.setPosition(window.getSize().x / 2 - SEARCH_BAR_WIDTH / 2 + SEARCH_BAR_TEXT_MARGIN, SEARCH_BAR_TEXT_MARGIN);
+	searchText.setCharacterSize(SEARCH_BAR_FONT_SIZE);
+	searchBuffer[0] = '\0';
 }
 
 bool GUI::isPointOverRect(const sf::Vector2f& vector, const sf::RectangleShape& rect)

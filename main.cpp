@@ -1,11 +1,8 @@
 #define BACKGROUND_COLOR 0xa9a9a9ff
 #define TEXT_COLOR 0xf0f0f0ff
 #define INPUT_BUFFER_SIZE 20
-#define SEARCH_BAR_WIDTH 400
-#define SEARCH_BAR_HEIGHT 40
-#define SEARCH_BAR_COLOR 0x323232ff
 #define SEARCH_BAR_BUFFER_SIZE 31
-#define SEARCH_BAR_FONT_SIZE 16
+#define SEARCH_BAR_WIDTH 400
 #define SEARCH_BAR_TEXT_MARGIN 8
 
 #include <fstream>
@@ -60,21 +57,19 @@ inline void init(sf::RenderWindow& window)
 	GUI::initializeFont();
 	editingFloat = new float();
 
-	searchBar = new sf::RectangleShape(sf::Vector2f(SEARCH_BAR_WIDTH, SEARCH_BAR_HEIGHT));
-	searchBar->setPosition(window.getSize().x / 2 - SEARCH_BAR_WIDTH / 2, 0);
-	searchBar->setFillColor(sf::Color(SEARCH_BAR_COLOR));
-	searchText.setFillColor(sf::Color(TEXT_COLOR));
-	searchText.setFont(GUI::gFont);
-	searchText.setPosition(window.getSize().x / 2 - SEARCH_BAR_WIDTH / 2 + SEARCH_BAR_TEXT_MARGIN, SEARCH_BAR_TEXT_MARGIN);
-	searchText.setCharacterSize(SEARCH_BAR_FONT_SIZE);
-	searchBuffer[0] = '\0';
+	GUI::initializeSearchBar(searchBar, searchText, searchBuffer, window);
 
 	shaders = new sf::Shader[5];
-	shaders[0].loadFromFile("shaders/checker.glsl", sf::Shader::Fragment);
-	shaders[1].loadFromFile("shaders/gradient.glsl", sf::Shader::Fragment);
-	shaders[2].loadFromFile("shaders/multiply.glsl", sf::Shader::Fragment);
-	shaders[3].loadFromFile("shaders/rotate90.glsl", sf::Shader::Fragment);
-	shaders[4].loadFromFile("shaders/repeat.glsl", sf::Shader::Fragment);
+	if (!shaders[0].loadFromFile("shaders/checker.glsl", sf::Shader::Fragment))
+		std::cout << "checker shader not available\n";
+	if (!shaders[1].loadFromFile("shaders/gradient.glsl", sf::Shader::Fragment))
+		std::cout << "gradient shader not available\n";
+	if (!shaders[2].loadFromFile("shaders/multiply.glsl", sf::Shader::Fragment))
+		std::cout << "multiply shader not available\n";
+	if (!shaders[3].loadFromFile("shaders/rotate90.glsl", sf::Shader::Fragment))
+		std::cout << "rotate90 shader not available\n";
+	if (!shaders[4].loadFromFile("shaders/repeat.glsl", sf::Shader::Fragment))
+		std::cout << "repeat shader not available\n";
 
 	createOutputNode(window);
 	window.setFramerateLimit(60); // 10
