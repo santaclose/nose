@@ -229,6 +229,13 @@ inline void EventKeyPressed(sf::Keyboard::Key keyCode)
 			nodes.push_back(newNode = new GUI::Node("Linear Gradient", NodeActions::LinearGradient));
 			break;
 		}
+		case sf::Keyboard::I:
+		{
+			if (searching)
+				break;
+			nodes.push_back(newNode = new GUI::Node("Invert", NodeActions::Invert));
+			break;
+		}
 		case sf::Keyboard::M:
 		{
 			if (searching)

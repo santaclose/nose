@@ -40,6 +40,13 @@ Integer
 	in:
 		Integer: in
 ]
+Invert
+[
+	out:
+		Image: out
+	in:
+		Image: in
+]
 Linear Gradient
 [
 	out:

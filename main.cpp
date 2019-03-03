@@ -59,7 +59,7 @@ inline void init(sf::RenderWindow& window)
 
 	GUI::initializeSearchBar(searchBar, searchText, searchBuffer, window);
 
-	shaders = new sf::Shader[5];
+	shaders = new sf::Shader[6];
 	if (!shaders[0].loadFromFile("shaders/checker.glsl", sf::Shader::Fragment))
 		std::cout << "checker shader not available\n";
 	if (!shaders[1].loadFromFile("shaders/gradient.glsl", sf::Shader::Fragment))
@@ -70,6 +70,8 @@ inline void init(sf::RenderWindow& window)
 		std::cout << "rotate90 shader not available\n";
 	if (!shaders[4].loadFromFile("shaders/repeat.glsl", sf::Shader::Fragment))
 		std::cout << "repeat shader not available\n";
+	if (!shaders[5].loadFromFile("shaders/invert.glsl", sf::Shader::Fragment))
+		std::cout << "invert shader not available\n";
 
 	createOutputNode(window);
 	window.setFramerateLimit(60); // 10

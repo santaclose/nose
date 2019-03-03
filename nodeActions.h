@@ -100,4 +100,18 @@ namespace NodeActions
 		sf::Sprite spr(outputPointer->getTexture());
 		outputPointer->draw(spr, &shaders[4]);
 	}
+
+	const void Invert(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
+	{
+		sf::RenderTexture* outputPointer = ((sf::RenderTexture*) outputPins[0]->data);
+		sf::RenderTexture* a = ((sf::RenderTexture*) inputPins[0]->getData());
+
+		sf::Vector2u size = a->getSize();
+		outputPointer->create(size.x, size.y);
+
+		shaders[5].setParameter("tex", a->getTexture());
+
+		sf::Sprite spr(outputPointer->getTexture());
+		outputPointer->draw(spr, &shaders[5]);
+	}
 }
