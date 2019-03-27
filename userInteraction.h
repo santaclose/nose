@@ -56,12 +56,49 @@ inline void EventMouseLeftDown(sf::Vector2f& mousePos)
 			else if (n->isMouseOverInteractionComponent(mousePos, p))
 			{
 				std::cout << "editing" << std::endl;
-				if (p->type == GUI::Pin::Integer)
-					*editingFloat = (float) (*((int*) p->data));
-				else
-					*editingFloat = *((float*) p->data);
-				startDraggingMousePosition = mousePos;
-				editingPin = p;
+				switch (p->type)
+				{
+					case GUI::Pin::Integer:
+						*editingFloat = (float) (*((int*) p->data));
+						startDraggingMousePosition = mousePos;
+						editingPin = p;
+						break;
+					case GUI::Pin::Float:
+						*editingFloat = *((float*) p->data);
+						startDraggingMousePosition = mousePos;
+						editingPin = p;
+						break;
+					case GUI::Pin::Image:
+						char filename[1024];
+						FILE *f = popen("zenity --file-selection", "r");
+						fgets(filename, 1024, f);
+						int i; for (i = 0; filename[i] != '\n'; i++); filename[i] = '\0'; // remove endline
+						std::cout << "image set to " << filename << std::endl;
+
+						sf::Texture tx;
+						if (!tx.loadFromFile(filename))
+						{
+							std::cout << "Could not open the image" << std::endl;
+							return;
+						}
+						loadImageShader.setParameter("tx", tx);
+
+						sf::Sprite spr(tx);
+
+						sf::Vector2u txSize = tx.getSize();
+
+						sf::RenderTexture* pointer = (sf::RenderTexture*) p->data;
+
+						pointer->create(txSize.x, txSize.y);
+						pointer->draw(spr, &loadImageShader);
+
+						p->setInteractiveText(filename);
+						p->dataAvailable = true;
+
+						p->setValue(&spr); // nothing but activate the node
+
+						break;
+				}
 				break; // cannot click two nodes at the same time
 			}
 		}

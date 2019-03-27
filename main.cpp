@@ -15,6 +15,8 @@
 sf::Shader* shaders;
 #include "nodeActions.h"
 
+sf::Shader loadImageShader;
+
 struct ConnectionLine
 {
 	GUI::Pin* pins[2];
@@ -58,6 +60,11 @@ inline void init(sf::RenderWindow& window)
 	editingFloat = new float();
 
 	GUI::initializeSearchBar(searchBar, searchText, searchBuffer, window);
+
+	if (!loadImageShader.loadFromFile("shaders/_loadImage.glsl", sf::Shader::Fragment))
+	{
+		std::cout << "essential shader not available\n";
+	}
 
 	shaders = new sf::Shader[6];
 	if (!shaders[0].loadFromFile("shaders/checker.glsl", sf::Shader::Fragment))

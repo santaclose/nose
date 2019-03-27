@@ -199,8 +199,12 @@ void GUI::Pin::setPosition(const sf::Vector2f& newPosition, const int i)
 
 bool GUI::Pin::hasDataAvailable()
 {
-	if (this->type == Pin::Integer || this->type == Pin::Float || this->type == Pin::Vector2i || this->type == Pin::Color)
+	if (this->type != Pin::Image)
 		return true;
+
+	if (this->dataAvailable == true) // image set for the input pin
+		return true;
+
 	if (this->connectedPins.size() == 0) // pin not connected
 		return false;
 	if (!this->connectedPins[0]->dataAvailable) // connected pin has no data
@@ -234,6 +238,21 @@ bool GUI::Pin::isMouseOverInteractionComponent(sf::Vector2f& mousePos)
 	return false;
 }
 
+void GUI::Pin::setInteractiveText(const char* newName)
+{
+	std::string fileName = "";
+	for (int j = 0; newName[j] != '\0'; j++)
+	{
+		fileName += newName[j];
+		if (newName[j] == '/')
+		{
+			fileName = "";
+		}
+	}
+
+	this->interactiveText.setString(fileName);
+}
+
 bool GUI::Pin::isDisconnected()
 {
 	return connectionVertices.empty();
@@ -241,16 +260,23 @@ bool GUI::Pin::isDisconnected()
 
 void GUI::Pin::setValue(const void* data) // copies the data into its data field
 {
-	if (this->type == Pin::Float)
-		this->interactiveText.setString(std::to_string(*((float*) this->data) = *((float*) data)));
-	else if (this->type == Pin::Integer)
-		this->interactiveText.setString(std::to_string(*((int*) this->data) = (int) *((float*) data)));
-	else if (this->type == Pin::Vector2i)
-		*((sf::Vector2i*) this->data) = *((sf::Vector2i*) data);
-	else if (this->type == Pin::Color)
-		*((sf::Color*) this->data) = *((sf::Color*) data);
-	else
-		std::cout << "cannot set value for type " << this->type << std::endl;
+	switch (this->type)
+	{
+		case Pin::Float:
+			this->interactiveText.setString(std::to_string(*((float*) this->data) = *((float*) data)));
+			break;
+		case Pin::Integer:
+			this->interactiveText.setString(std::to_string(*((int*) this->data) = (int) *((float*) data)));
+			break;
+		case Pin::Vector2i:
+			*((sf::Vector2i*) this->data) = *((sf::Vector2i*) data);
+			break;
+		case Pin::Color:
+			*((sf::Color*) this->data) = *((sf::Color*) data);
+			break;
+		case Pin::Image:
+			break;
+	}
 
 	this->parentNode->activate();
 }
@@ -477,9 +503,14 @@ bool GUI::Node::hasAllInputData()
 {
 	for (Pin* p : inputPins)
 	{
-		if (!p->hasDataAvailable())
+		if (!p->hasDataAvailable()){
+			if (!this->isOutputNode)
+				std::cout << "false";
 			return false;
+		}
 	}
+	if (!this->isOutputNode)
+		std::cout<< "true";
 	return true;
 }
 
