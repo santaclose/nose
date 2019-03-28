@@ -47,7 +47,7 @@ namespace GUI
 		void* getData();
 		bool isMouseOver(sf::Vector2f& mousePos);
 		bool isMouseOverInteractionComponent(sf::Vector2f& mousePos);
-		void setInteractiveText(const char* newName);
+		void setInteractiveText(const std::string& newText);
 		bool isDisconnected();
 		void setValue(const void* data);
 		void establishConnection(sf::Vertex* newConnectionVertex, Pin* other, bool isSecondConnection);

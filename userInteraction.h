@@ -59,24 +59,74 @@ inline void EventMouseLeftDown(sf::Vector2f& mousePos)
 				switch (p->type)
 				{
 					case GUI::Pin::Integer:
+					{
 						*editingFloat = (float) (*((int*) p->data));
 						startDraggingMousePosition = mousePos;
 						editingPin = p;
 						break;
+					}
 					case GUI::Pin::Float:
+					{
 						*editingFloat = *((float*) p->data);
 						startDraggingMousePosition = mousePos;
 						editingPin = p;
 						break;
+					}
+					case GUI::Pin::Color:
+					{
+						char colorString[32];
+						FILE *f = popen("zenity --color-selection", "r");
+						fgets(colorString, 32, f);
+						std::cout << "color set to \"" << colorString << "\"" << std::endl;
+						if (colorString[0] == '\0')
+						{
+							std::cout << "No color selected" << std::endl;
+							return;
+						}
+						int i; for (i = 0; colorString[i] != '\n'; i++); colorString[i] = '\0'; // remove endline
+						std::string redString = "", greenString = "", blueString = "", alphaString = "";
+						bool usingAlpha = false;
+						for (i = 0; colorString[i] != '('; i++)
+						{
+							if (colorString[i] == 'a')
+								usingAlpha = true;
+						}
+						i++;
+						for ( ; colorString[i] != ',' ; i++) redString += colorString[i]; i++;
+						for ( ; colorString[i] != ',' ; i++) greenString += colorString[i]; i++;
+						if (!usingAlpha)
+						{
+							for ( ; colorString[i] != ')' ; i++) blueString += colorString[i];
+							alphaString = "1.0";
+						}
+						else
+						{
+							for ( ; colorString[i] != ',' ; i++) blueString += colorString[i]; i++;
+							for ( ; colorString[i] != ')' ; i++) alphaString += colorString[i];
+
+						}
+
+						sf::Color newColor(std::stoi(redString), std::stoi(greenString), std::stoi(blueString), (int) (std::stof(alphaString) * 255.0));
+
+						std::cout << "Red: " << unsigned(newColor.r) << std::endl;
+						std::cout << "Green: " << unsigned(newColor.g) << std::endl;
+						std::cout << "Blue: " << unsigned(newColor.b) << std::endl;
+						std::cout << "Alpha: " << unsigned(newColor.a) << std::endl;
+
+						p->setValue(&newColor);
+
+						break;
+					}
 					case GUI::Pin::Image:
-						char filename[1024];
+					{
+						char filePath[1024];
 						FILE *f = popen("zenity --file-selection", "r");
-						fgets(filename, 1024, f);
-						int i; for (i = 0; filename[i] != '\n'; i++); filename[i] = '\0'; // remove endline
-						std::cout << "image set to " << filename << std::endl;
+						fgets(filePath, 1024, f);
+						int i; for (i = 0; filePath[i] != '\n'; i++); filePath[i] = '\0'; // remove endline
+						std::cout << "image set to \"" << filePath << "\"\n";
 
 						sf::Texture tx;
-						if (!tx.loadFromFile(filename))
+						if (!tx.loadFromFile(filePath))
 						{
 							std::cout << "Could not open the image" << std::endl;
 							return;
@@ -92,12 +142,22 @@ inline void EventMouseLeftDown(sf::Vector2f& mousePos)
 						pointer->create(txSize.x, txSize.y);
 						pointer->draw(spr, &loadImageShader);
 
-						p->setInteractiveText(filename);
+						std::string fileName = "";
+						for (int j = 0; filePath[j] != '\0'; j++)
+						{
+							fileName += filePath[j];
+							if (filePath[j] == '/')
+							{
+								fileName = "";
+							}
+						}
+						p->setInteractiveText(fileName);
 						p->dataAvailable = true;
 
 						p->setValue(&spr); // nothing but activate the node
 
 						break;
+					}
 				}
 				break; // cannot click two nodes at the same time
 			}

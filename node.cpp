@@ -238,19 +238,9 @@ bool GUI::Pin::isMouseOverInteractionComponent(sf::Vector2f& mousePos)
 	return false;
 }
 
-void GUI::Pin::setInteractiveText(const char* newName)
+void GUI::Pin::setInteractiveText(const std::string& newText)
 {
-	std::string fileName = "";
-	for (int j = 0; newName[j] != '\0'; j++)
-	{
-		fileName += newName[j];
-		if (newName[j] == '/')
-		{
-			fileName = "";
-		}
-	}
-
-	this->interactiveText.setString(fileName);
+	this->interactiveText.setString(newText);
 }
 
 bool GUI::Pin::isDisconnected()
@@ -272,7 +262,8 @@ void GUI::Pin::setValue(const void* data) // copies the data into its data field
 			*((sf::Vector2i*) this->data) = *((sf::Vector2i*) data);
 			break;
 		case Pin::Color:
-			*((sf::Color*) this->data) = *((sf::Color*) data);
+//			*((sf::Color*) this->data) = *((sf::Color*) data);
+			this->interactiveRect.setFillColor(*((sf::Color*) this->data) = *((sf::Color*) data));
 			break;
 		case Pin::Image:
 			break;
