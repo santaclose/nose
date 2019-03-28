@@ -1,30 +1,38 @@
 Checker
 [
 	out:
-		Image: Result
+		Image: iesult
 	in:
-		Vector2i: Image size
-		Integer: Square size
-		Color: Color A
-		Color: Color B
+		Vector2i: image size
+		Integer: square size
+		Color: color a
+		Color: color b
 ]
 Construct Color
 [
 	out:
-		Color: Color
+		Color: color
 	in:
-		Integer: R
-		Integer: G
-		Integer: B
-		Integer: A
+		Integer: r
+		Integer: g
+		Integer: b
+		Integer: a
 ]
 Construct Vector2i
 [
 	out:
-		Vector2i: Vector
+		Vector2i: vector
 	in:
-		Integer: X
-		Integer: Y
+		Integer: x
+		Integer: y
+]
+Flip
+[
+	out:
+		Image: out
+	in:
+		Image: in
+		Integer: vertical?
 ]
 Float
 [
@@ -32,6 +40,14 @@ Float
 		Float: out
 	in:
 		Float: in
+]
+Image
+[
+	in:
+		Image: 
+	out:
+		Image: image
+		Vector2i: image size
 ]
 Integer
 [
@@ -50,35 +66,36 @@ Invert
 Linear Gradient
 [
 	out:
-		Image: Result
+		Image: result
 	in:
-		Vector2i: Image size
+		Vector2i: image size
 ]
 Multiply
 [
 	out:
-		Image: Result
+		Image: result
 	in:
-		Image: A
-		Image: B
+		Image: a
+		Image: b
 ]
 Output
 [
 	in:
-		Image: Image
+		Image: image
 ]
 Repeat
 [
 	out:
-		Image: Result
+		Image: result
 	in:
-		Image: Image
-		Vector2i: Image size
+		Image: image
+		Vector2i: image size
 ]
 Rotate 90
 [
 	out:
-		Image: Image
+		Image: image
 	in:
-		Image: Image
+		Image: image
+		Integer: times
 ]

@@ -8,6 +8,40 @@ namespace NodeActions
 	{
 		*((float*) outputPins[0]->data) = *((float*) inputPins[0]->getData());
 	}
+	const void Image(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
+	{
+		sf::RenderTexture* outputPointer = ((sf::RenderTexture*) outputPins[0]->data);
+		sf::Vector2i* outputSize = ((sf::Vector2i*) outputPins[1]->data);
+		sf::RenderTexture* a = ((sf::RenderTexture*) inputPins[0]->getData());
+
+		sf::Vector2u size = a->getSize();
+
+		outputPointer->create(size.x, size.y);
+
+		loadImageShader.setParameter("tx", a->getTexture());
+
+		sf::Sprite spr(a->getTexture());
+		outputPointer->draw(spr, &loadImageShader);
+		*outputSize = sf::Vector2i(size.x, size.y);
+	}
+
+	const void Flip(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
+	{
+		sf::RenderTexture* outputPointer = ((sf::RenderTexture*) outputPins[0]->data);
+		sf::RenderTexture* a = ((sf::RenderTexture*) inputPins[0]->getData());
+		int* xAxis = ((int*) inputPins[1]->getData());
+
+		sf::Vector2u size = a->getSize();
+
+		outputPointer->create(size.x, size.y);
+
+		shaders[6].setParameter("tx", a->getTexture());
+		shaders[6].setParameter("xAxis", *xAxis % 2);
+
+		sf::Sprite spr(a->getTexture());
+		outputPointer->draw(spr, &shaders[6]);
+	}
+
 	const void VectoriFromIntegers(const std::vector<GUI::Pin*>& inputPins, const std::vector<GUI::Pin*>& outputPins)
 	{
 		sf::Vector2i* outputPointer = ((sf::Vector2i*) outputPins[0]->data);
@@ -73,11 +107,20 @@ namespace NodeActions
 	{
 		sf::RenderTexture* outputPointer = ((sf::RenderTexture*) outputPins[0]->data);
 		sf::RenderTexture* a = ((sf::RenderTexture*) inputPins[0]->getData());
+		int* times = ((int*) inputPins[1]->getData());
+		int fixed = *times < 0 ? *times * -1 + 2 : *times;
 
 		sf::Vector2u size = a->getSize();
-		outputPointer->create(size.y, size.x);
 
-		shaders[3].setParameter("tex", a->getTexture());
+		if (fixed % 2 == 1)
+			outputPointer->create(size.y, size.x);
+		else
+			outputPointer->create(size.x, size.y);
+
+		std::cout << fixed << std::endl;
+
+		shaders[3].setParameter("tx", a->getTexture());
+		shaders[3].setParameter("times", (float) fixed);
 
 		sf::Sprite spr(outputPointer->getTexture());
 		outputPointer->draw(spr, &shaders[3]);

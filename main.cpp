@@ -13,9 +13,8 @@
 #include <SFML/Graphics.hpp>
 #include "node.h"
 sf::Shader* shaders;
-#include "nodeActions.h"
-
 sf::Shader loadImageShader;
+#include "nodeActions.h"
 
 struct ConnectionLine
 {
@@ -66,10 +65,10 @@ inline void init(sf::RenderWindow& window)
 		std::cout << "essential shader not available\n";
 	}
 
-	shaders = new sf::Shader[6];
+	shaders = new sf::Shader[7];
 	if (!shaders[0].loadFromFile("shaders/checker.glsl", sf::Shader::Fragment))
 		std::cout << "checker shader not available\n";
-	if (!shaders[1].loadFromFile("shaders/gradient.glsl", sf::Shader::Fragment))
+	if (!shaders[1].loadFromFile("shaders/linearGradient.glsl", sf::Shader::Fragment))
 		std::cout << "gradient shader not available\n";
 	if (!shaders[2].loadFromFile("shaders/multiply.glsl", sf::Shader::Fragment))
 		std::cout << "multiply shader not available\n";
@@ -79,6 +78,8 @@ inline void init(sf::RenderWindow& window)
 		std::cout << "repeat shader not available\n";
 	if (!shaders[5].loadFromFile("shaders/invert.glsl", sf::Shader::Fragment))
 		std::cout << "invert shader not available\n";
+	if (!shaders[6].loadFromFile("shaders/flip.glsl", sf::Shader::Fragment))
+		std::cout << "flip shader not available\n";
 
 	createOutputNode(window);
 	window.setFramerateLimit(60); // 10

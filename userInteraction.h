@@ -347,6 +347,20 @@ inline void EventKeyPressed(sf::Keyboard::Key keyCode)
 			nodes.push_back(newNode = new GUI::Node("Rotate 90", NodeActions::Rotate90));
 			break;
 		}
+		case sf::Keyboard::W:
+		{
+			if (searching)
+				break;
+			nodes.push_back(newNode = new GUI::Node("Flip", NodeActions::Flip));
+			break;
+		}
+		case sf::Keyboard::Q:
+		{
+			if (searching)
+				break;
+			nodes.push_back(newNode = new GUI::Node("Image", NodeActions::Image));
+			break;
+		}
 		case sf::Keyboard::Numpad0:
 		case sf::Keyboard::Num0:
 		{
