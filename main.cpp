@@ -14,7 +14,7 @@
 #include "node.h"
 sf::Shader* shaders;
 sf::Shader loadImageShader;
-#include "nodeActions.h"
+#include "nodeActions.cpp"
 
 struct ConnectionLine
 {
@@ -45,7 +45,7 @@ sf::Text searchText;
 char searchBuffer[SEARCH_BAR_BUFFER_SIZE];
 int searchBufferCurrentChar = 0;
 
-#include "userInteraction.h"
+#include "userInteraction.cpp"
 
 void createOutputNode(sf::RenderWindow& window)
 {

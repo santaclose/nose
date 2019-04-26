@@ -72,7 +72,7 @@ namespace GUI
 
 		~Node();
 		virtual void activate();
-		void setPosition(const sf::Vector2f& newPosition); // receives node's top left corner as new position
+		virtual void setPosition(const sf::Vector2f& newPosition); // receives node's top left corner as new position
 		sf::Vector2f getPosition();
 		bool isMouseOver(sf::Vector2f& mousePos);
 		bool isMouseOverBar(sf::Vector2f& mousePos);
@@ -82,16 +82,24 @@ namespace GUI
 		bool isMouseOverInteractionComponent(sf::Vector2f& mousePos, Pin*& resultingPin);
 		void paintAsSelected();
 		void paintAsUnselected();
-		void draw(sf::RenderWindow& window);
+		virtual void draw(sf::RenderWindow& window);
 	};
 
 	class OutputNode : public Node
 	{
 	private:
+		sf::RectangleShape saveButtonRect;
+		sf::Text saveButtonText;
 		sf::RenderWindow* window;
 	public:
 		OutputNode(const std::string& name, const void (*action)(const std::vector<Pin*>& inputPins, const std::vector<Pin*>& outputPins), sf::RenderWindow* window);
 
+		bool isMouseOverSaveButton(sf::Vector2f& mousePos);
+		void saveImage();
+
+		// inherited
 		void activate();
+		void setPosition(const sf::Vector2f& newPosition);
+		void draw(sf::RenderWindow& window);
 	};
 }

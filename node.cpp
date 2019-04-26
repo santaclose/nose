@@ -38,7 +38,6 @@
 #define SEARCH_BAR_FONT_SIZE 16
 #define SEARCH_BAR_TEXT_MARGIN 8
 
-
 /////////// generic
 void GUI::initializeFont()
 {
@@ -550,6 +549,28 @@ GUI::OutputNode::OutputNode(const std::string& name, const void (*action)(const 
 	std::cout << "construct output node" << std::endl;
 	this->isOutputNode = true;
 	this->window = window;
+	this->saveButtonRect = sf::RectangleShape(sf::Vector2f(NODE_WIDTH * 0.3, BAR_HEIGHT * 0.8));
+	this->saveButtonRect.setFillColor(sf::Color(INTERACTIVE_COMPONENT_COLOR));
+	this->saveButtonText = sf::Text("save", gFont, PIN_TEXT_FONT_SIZE);
+	this->saveButtonText.setFillColor(sf::Color(TEXT_COLOR));
+}
+
+bool GUI::OutputNode::isMouseOverSaveButton(sf::Vector2f& mousePos)
+{
+	return isPointOverRect(mousePos, this->saveButtonRect);
+}
+
+void GUI::OutputNode::saveImage()
+{
+	if (!this->hasAllInputData())
+	{
+		std::cout << "NO DATA TO SAVE" << std::endl;
+		return;
+	}
+
+	sf::RenderTexture* pointer = (sf::RenderTexture*) inputPins[0]->connectedPins[0]->data;
+	pointer->getTexture().copyToImage().saveToFile("out.png");
+	std::cout << "IMAGE SAVED AS \"out.png\"\n";
 }
 
 void GUI::OutputNode::activate()
@@ -563,4 +584,18 @@ void GUI::OutputNode::activate()
 		spr.setPosition(20, 20);
 		this->window->draw(spr);
 	}
+}
+
+void GUI::OutputNode::setPosition(const sf::Vector2f& newPosition)
+{
+	Node::setPosition(newPosition);
+	this->saveButtonRect.setPosition(this->contentRect.getPosition() + sf::Vector2f(NODE_WIDTH * 0.65, 8.0));
+	this->saveButtonText.setPosition(this->saveButtonRect.getPosition() + sf::Vector2f(12.0, 3.0));
+}
+
+void GUI::OutputNode::draw(sf::RenderWindow& window)
+{
+	Node::draw(window);
+	window.draw(this->saveButtonRect);
+	window.draw(this->saveButtonText);
 }

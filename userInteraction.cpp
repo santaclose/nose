@@ -31,6 +31,15 @@ inline void EventMouseLeftDown(sf::Vector2f& mousePos)
 		
 		if (n->isMouseOverContent(mousePos))
 		{
+			if (n == outputNode)
+			{
+				if (outputNode->isMouseOverSaveButton(mousePos))
+				{
+					outputNode->saveImage();
+					return;
+				}
+			}
+
 			GUI::Pin* p;
 			if (n->isMouseOverPin(mousePos, p))
 			{
